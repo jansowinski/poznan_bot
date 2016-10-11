@@ -41,7 +41,7 @@ def rialto(adressUrl):
     kinoDiv = kino.find("div", "mk-accordion mk-shortcode accordion-action fancy-style ").find("ul")
     array = []
     for child in kinoDiv.children:
-        array.append((child.contents[0].contents[0][6:] + " / " + child.contents[0].contents[0][0:5]))
+        array.append((child.contents[0].contents[0][6:].title() + " / " + child.contents[0].contents[0][0:5]))
     return array
 
 # MUZA
@@ -55,7 +55,7 @@ def muza(urlAdress):
             pass
         else:
             childTiltle = child.find("h4")
-            array.append((childTiltle.contents[0].contents[0] + " / " + childTime.contents[0]))
+            array.append((childTiltle.contents[0].contents[0].title() + " / " + childTime.contents[0]))
     return array
 
 def dateSetter():
@@ -111,35 +111,35 @@ updater.start_polling()
 
 def kino_muza (bot, update):
     global muzaUrl
-    bot.sendMessage(chat_id = update.message.chat_id, text = "\n".join(muza(muzaUrl)))
+    bot.sendMessage(chat_id = update.message.chat_id, text = "KINO MUZA:\n\n" +"\n".join(muza(muzaUrl)))
 
 kino_muza_handler = CommandHandler('kino_muza', kino_muza)
 dispatcher.add_handler(kino_muza_handler)
 
 def kino_rialto (bot, update):
     global rialtoUrl
-    bot.sendMessage(chat_id = update.message.chat_id, text = "\n".join(rialto(rialtoUrl)))
+    bot.sendMessage(chat_id = update.message.chat_id, text = "KINO RIALTO:\n\n" +"\n".join(rialto(rialtoUrl)))
 
 kino_rialto_handler = CommandHandler('kino_rialto', kino_rialto)
 dispatcher.add_handler(kino_rialto_handler)
 
 def kino_51 (bot, update):
     global piecJedenUrl
-    bot.sendMessage(chat_id = update.message.chat_id, text = "\n".join(multikino(piecJedenUrl)))
+    bot.sendMessage(chat_id = update.message.chat_id, text ="MULTIKINO 51:\n\n" + "\n".join(multikino(piecJedenUrl)))
 
 kino_51_handler = CommandHandler('kino_51', kino_51)
 dispatcher.add_handler(kino_51_handler)
 
 def kino_browar (bot, update):
     global browarUrl
-    bot.sendMessage(chat_id = update.message.chat_id, text = "\n".join(multikino(browarUrl)))
+    bot.sendMessage(chat_id = update.message.chat_id, text ="MULTIKINO BROWAR:\n\n" + "\n".join(multikino(browarUrl)))
 
 kino_browar_handler = CommandHandler('kino_browar', kino_browar)
 dispatcher.add_handler(kino_browar_handler)
 
 def kino_malta (bot, update):
     global maltaUrl
-    bot.sendMessage(chat_id = update.message.chat_id, text = "\n".join(multikino(maltaUrl)))
+    bot.sendMessage(chat_id = update.message.chat_id, text = "MULTIKINO MALTA:\n\n" + "\n".join(multikino(maltaUrl)))
 
 kino_malta_handler = CommandHandler('kino_malta', kino_malta)
 dispatcher.add_handler(kino_malta_handler)
@@ -161,7 +161,7 @@ def kino (bot, update):
     bot.sendMessage(chat_id = update.message.chat_id, text = "MULTIKINO BROWAR:\n\n" + "\n".join(multikino(browarUrl)))
     bot.sendMessage(chat_id = update.message.chat_id, text = "MULTIKINO 51:\n\n" + "\n".join(multikino(piecJedenUrl)))
     bot.sendMessage(chat_id = update.message.chat_id, text = "KINO RIALTO:\n\n" + "\n".join(rialto(rialtoUrl)))
-    bot.sendMessage(chat_id = update.message.chat_id, text = "KINO MUZA:\n\n" + "\n".join(muza(muzaUrl)))
+    bot.sendMessage(chat_id = update.message.chat_id, text = "KINO MUZA:**\n\n" + "\n".join(muza(muzaUrl)), parse_mode=telegram.ParseMode.MARKDOWN)
 
 kino_handler = CommandHandler('kino', kino)
 dispatcher.add_handler(kino_handler)
@@ -171,19 +171,19 @@ dispatcher.add_handler(kino_handler)
 
 # array = file.write("# Kino\n\ncreated at " + datetime.datetime.today().strftime('%H:%M:%S / %d.%m.%Y') + "\n\n## Muza\n\n")
 #
-#     ("- " + element + "\n")
+#     (element + "\n")
 # file.write("\n\n## Rialto\n\n")
 # for element in rialto(rialtoUrl):
-#     file.write("- " + element + "\n")
+#     file.write(element + "\n")
 # file.write("\n\n## Multikino 51\n\n")
 # for element in multikino(piecJedenUrl):
-#     file.write("- " + element + "\n")
+#     file.write(element + "\n")
 # file.write("\n\n## Multikino Stary Browar\n\n")
 # for element in multikino(browarUrl):
-#     file.write("- " + element + "\n")
+#     file.write(element + "\n")
 # file.write("\n\n## Multikino Malta\n\n")
 # for element in multikino(maltaUrl):
-#     file.write("- " + element + "\n")
+#     file.write(element + "\n")
 # file.write("\n# Pogoda\n\n![](pogoda.jpg)")
 
 # Charlie monroe
