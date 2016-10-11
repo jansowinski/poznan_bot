@@ -1,1 +1,1 @@
-worker: python3 poznan_bot.py
+worker: python poznan_bot.py
