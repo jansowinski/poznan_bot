@@ -11,6 +11,8 @@ muzaUrl = "http://kinomuza.pl/repertuar"
 maltaUrl = "https://multikino.pl/pl/repertuar/poznan-malta"
 browarUrl = "https://multikino.pl/pl/repertuar/poznan-stary-browar"
 piecJedenUrl = "https://multikino.pl/pl/repertuar/poznan-multikino-51"
+arsenalUrl = "http://www.arsenal.art.pl/wystawa/"
+
 # zamekUrl = "http://www.zamek.poznan.pl/news,pl,5177.html"
 # charlieUrl = "http://www.kinomalta.pl/"
 
@@ -90,6 +92,41 @@ def nameSetter():
 
 # urllib.request.urlretrieve(urlMaker(), where + nameSetter())
 
+# A R S E N A Ł
+
+def timeChecker (arg):
+    standarizedArg = arg.replace(" ", "").lower()
+    if "godz" not in standarizedArg:
+        today = datetime.datetime.today()
+        currentDay = int(today.strftime('%d'))
+        currentMonth = int(today.strftime('%m'))
+        passedDay = int(standarizedArg[11:13])
+        passedMonth = int(standarizedArg[14:16])
+        if currentMonth < passedMonth:
+            return True
+        elif currentMonth == passedMonth and currentDay < passedDay:
+            return True
+        else:
+            return False
+    else:
+        return False
+
+def arsenalGaleria(adressUrl):
+    galeria = assigner(adressUrl)
+    galeriaDiv = galeria.find("section", "content category")
+    array = []
+    for child in galeriaDiv.children:
+        if child == "\n": continue
+        title = child.find("h1")
+        if title in {None, -1}: continue
+        onDisplay = child.find("p", "czasZdarzenia")
+
+        if timeChecker(onDisplay.contents[0]) == True:
+            array.append(title.contents[0])
+            array.append(onDisplay.contents[0])
+    return array
+
+
 # Bot Code
 
 from telegram.ext import Updater
@@ -150,6 +187,13 @@ def pogoda (bot, update):
 
 pogoda_handler = CommandHandler('pogoda', pogoda)
 dispatcher.add_handler(pogoda_handler)
+
+def arsenal (bot, update):
+    global arsenalUrl
+    bot.sendMessage(chat_id = update.message.chat_id, text = "GALERIA ARSENAŁ:\n\n" + "\n".join(arsenalGaleria(arsenalUrl)))
+
+arsenal_handler = CommandHandler('arsenal', arsenal)
+dispatcher.add_handler(arsenal_handler)
 
 def kino (bot, update):
     global rialtoUrl
