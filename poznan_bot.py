@@ -3,6 +3,8 @@ import datetime
 import telegram
 import logging
 from bs4 import BeautifulSoup
+import galeria
+import kina
 
 
 
@@ -16,56 +18,6 @@ arsenalUrl = "http://www.arsenal.art.pl/wystawa/"
 # zamekUrl = "http://www.zamek.poznan.pl/news,pl,5177.html"
 # charlieUrl = "http://www.kinomalta.pl/"
 
-def assigner (arg):
-    return BeautifulSoup(urllib.request.urlopen(arg), "html.parser")
-
-# Multikina Malta
-def multikino(adressUrl):
-    kino = assigner(adressUrl)
-    kinoDiv = kino.find("ul", "list image-list")
-    array = []
-    for child in kinoDiv.children:
-        arrayTemp = []
-        if child == "\n":
-            pass
-        else:
-            childTitle = child.find("a", "title").contents[0]
-            arrayTemp.append(childTitle + " / ")
-            for childTime in child.find("div", "showings").children:
-                if childTime != "\n":
-                    arrayTemp.append(childTime.contents[0].strip() + " ")
-            array.append("".join(arrayTemp))
-    return array
-
-# RIALTO
-def rialto(adressUrl):
-    kino = assigner(adressUrl)
-    kinoDiv = kino.find("div", "mk-accordion mk-shortcode accordion-action fancy-style ").find("ul")
-    array = []
-    for child in kinoDiv.children:
-        array.append((child.contents[0].contents[0][6:].title() + " / " + child.contents[0].contents[0][0:5]))
-    return array
-
-# MUZA
-def muza(urlAdress):
-    kino = assigner(urlAdress)
-    kinoDiv = kino.find("div", "poster-list")
-    array = []
-    for child in kinoDiv.children:
-        childTime = child.find("time")
-        if childTime == -1:
-            pass
-        else:
-            childTiltle = child.find("h4")
-            array.append((childTiltle.contents[0].contents[0].title() + " / " + childTime.contents[0]))
-    return array
-
-def dateSetter():
-    if hourNum() == "18":
-        now = datetime.date.fromordinal(datetime.date.today().toordinal()-1).strftime('%Y%m%d')
-    else:
-        now = datetime.datetime.today().strftime('%Y%m%d')
-    return now
 
 # Passing today's date to url
 
@@ -89,45 +41,7 @@ def urlMaker():
 
 def nameSetter():
     return "pogoda.jpg" #+ dateSetter() + hourNum() + ".jpg"
-
-# urllib.request.urlretrieve(urlMaker(), where + nameSetter())
-
-# A R S E N A Ł
-
-def timeChecker (arg):
-    standarizedArg = arg.replace(" ", "").lower()
-    if "godz" not in standarizedArg:
-        today = datetime.datetime.today()
-        currentDay = int(today.strftime('%d'))
-        currentMonth = int(today.strftime('%m'))
-        passedDay = int(standarizedArg[11:13])
-        passedMonth = int(standarizedArg[14:16])
-        if currentMonth < passedMonth:
-            return True
-        elif currentMonth == passedMonth and currentDay < passedDay:
-            return True
-        else:
-            return False
-    else:
-        return False
-
-def arsenalGaleria(adressUrl):
-    galeria = assigner(adressUrl)
-    galeriaDiv = galeria.find("section", "content category")
-    array = []
-    for child in galeriaDiv.children:
-        if child == "\n": continue
-        title = child.find("h1")
-        if title in {None, -1}: continue
-        onDisplay = child.find("p", "czasZdarzenia")
-
-        if timeChecker(onDisplay.contents[0]) == True:
-            array.append(title.contents[0])
-            array.append(onDisplay.contents[0])
-    return array
-
-
-# Bot Code
+# BOT
 
 from telegram.ext import Updater
 from telegram.ext import CommandHandler
@@ -148,35 +62,35 @@ updater.start_polling()
 
 def kino_muza (bot, update):
     global muzaUrl
-    bot.sendMessage(chat_id = update.message.chat_id, text = "KINO MUZA:\n\n" +"\n".join(muza(muzaUrl)))
+    bot.sendMessage(chat_id = update.message.chat_id, text = "KINO MUZA:\n\n" +"\n".join(kina.muza(muzaUrl)))
 
 kino_muza_handler = CommandHandler('kino_muza', kino_muza)
 dispatcher.add_handler(kino_muza_handler)
 
 def kino_rialto (bot, update):
     global rialtoUrl
-    bot.sendMessage(chat_id = update.message.chat_id, text = "KINO RIALTO:\n\n" +"\n".join(rialto(rialtoUrl)))
+    bot.sendMessage(chat_id = update.message.chat_id, text = "KINO RIALTO:\n\n" +"\n".join(kina.rialto(rialtoUrl)))
 
 kino_rialto_handler = CommandHandler('kino_rialto', kino_rialto)
 dispatcher.add_handler(kino_rialto_handler)
 
 def kino_51 (bot, update):
     global piecJedenUrl
-    bot.sendMessage(chat_id = update.message.chat_id, text ="MULTIKINO 51:\n\n" + "\n".join(multikino(piecJedenUrl)))
+    bot.sendMessage(chat_id = update.message.chat_id, text ="MULTIKINO 51:\n\n" + "\n".join(kina.multikino(piecJedenUrl)))
 
 kino_51_handler = CommandHandler('kino_51', kino_51)
 dispatcher.add_handler(kino_51_handler)
 
 def kino_browar (bot, update):
     global browarUrl
-    bot.sendMessage(chat_id = update.message.chat_id, text ="MULTIKINO BROWAR:\n\n" + "\n".join(multikino(browarUrl)))
+    bot.sendMessage(chat_id = update.message.chat_id, text ="MULTIKINO BROWAR:\n\n" + "\n".join(kina.multikino(browarUrl)))
 
 kino_browar_handler = CommandHandler('kino_browar', kino_browar)
 dispatcher.add_handler(kino_browar_handler)
 
 def kino_malta (bot, update):
     global maltaUrl
-    bot.sendMessage(chat_id = update.message.chat_id, text = "MULTIKINO MALTA:\n\n" + "\n".join(multikino(maltaUrl)))
+    bot.sendMessage(chat_id = update.message.chat_id, text = "MULTIKINO MALTA:\n\n" + "\n".join(kina.multikino(maltaUrl)))
 
 kino_malta_handler = CommandHandler('kino_malta', kino_malta)
 dispatcher.add_handler(kino_malta_handler)
@@ -190,7 +104,7 @@ dispatcher.add_handler(pogoda_handler)
 
 def arsenal (bot, update):
     global arsenalUrl
-    bot.sendMessage(chat_id = update.message.chat_id, text = "GALERIA ARSENAŁ:\n\n" + "\n".join(arsenalGaleria(arsenalUrl)))
+    bot.sendMessage(chat_id = update.message.chat_id, text = "GALERIA ARSENAŁ:\n\n" + "\n".join(galeria.arsenal(arsenalUrl)))
 
 arsenal_handler = CommandHandler('arsenal', arsenal)
 dispatcher.add_handler(arsenal_handler)
@@ -201,11 +115,11 @@ def kino (bot, update):
     global maltaUrl
     global browarUrl
     global piecJedenUrl
-    bot.sendMessage(chat_id = update.message.chat_id, text = "MULTIKINO MALTA:\n\n" + "\n".join(multikino(maltaUrl)))
-    bot.sendMessage(chat_id = update.message.chat_id, text = "MULTIKINO BROWAR:\n\n" + "\n".join(multikino(browarUrl)))
-    bot.sendMessage(chat_id = update.message.chat_id, text = "MULTIKINO 51:\n\n" + "\n".join(multikino(piecJedenUrl)))
-    bot.sendMessage(chat_id = update.message.chat_id, text = "KINO RIALTO:\n\n" + "\n".join(rialto(rialtoUrl)))
-    bot.sendMessage(chat_id = update.message.chat_id, text = "KINO MUZA:**\n\n" + "\n".join(muza(muzaUrl)), parse_mode=telegram.ParseMode.MARKDOWN)
+    bot.sendMessage(chat_id = update.message.chat_id, text = "MULTIKINO MALTA:\n\n" + "\n".join(kina.multikino(maltaUrl)))
+    bot.sendMessage(chat_id = update.message.chat_id, text = "MULTIKINO BROWAR:\n\n" + "\n".join(kina.multikino(browarUrl)))
+    bot.sendMessage(chat_id = update.message.chat_id, text = "MULTIKINO 51:\n\n" + "\n".join(kina.multikino(piecJedenUrl)))
+    bot.sendMessage(chat_id = update.message.chat_id, text = "KINO RIALTO:\n\n" + "\n".join(kina.rialto(rialtoUrl)))
+    bot.sendMessage(chat_id = update.message.chat_id, text = "KINO MUZA:**\n\n" + "\n".join(kina.muza(muzaUrl)), parse_mode=telegram.ParseMode.MARKDOWN)
 
 kino_handler = CommandHandler('kino', kino)
 dispatcher.add_handler(kino_handler)
