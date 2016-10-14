@@ -5,7 +5,7 @@ import logging
 from bs4 import BeautifulSoup
 import galeria
 import kina
-import pogoda
+import weather
 from telegram.ext import Updater
 from telegram.ext import CommandHandler
 
@@ -16,7 +16,7 @@ dispatcher = updater.dispatcher
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 def start(bot, update):
-    bot.sendMessage(chat_id = update.message.chat_id, text = "POGODA: /pogoda\nREPERTUARY: /kino <dzien> <nazwa> (np. '/kino 1 muza')")
+    bot.sendMessage(chat_id = update.message.chat_id, text = "POGODA:\n/pogoda\nREPERTUARY:\n/kino *<nazwa> **<ilość dni od dzisia>\n(np. /kino muza 1)\n\nObsługiwane kina (komendy, jak nazwy tutaj):\nbrowar\n51\nmalta\nkinepolis\nplaza\ncharlie\npalacowe\nmuza\nrialto\nbulgarska\napollo\nwszystkie")
 
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
@@ -25,19 +25,31 @@ updater.start_polling()
 
 def kino (bot, update, args):
     if len(args) == 0:
-        args.append(0)
-    if len(args) == 1:
         args.append("wszystkie")
-    global muzaUrl
+        args.append(0)
+        for items in kina.seanse(args[0], args[1]):
+            bot.sendMessage(chat_id = update.message.chat_id, text = "\n" +"".join(items))
+        return None
+    elif len(args) == 1:
+        args.append(0)
+        if args[0] == "wszystkie":
+            for items in kina.seanse(args[0], args[1]):
+                bot.sendMessage(chat_id = update.message.chat_id, text = "\n" +"".join(items))
+            return None
+    elif len(args) == 2 and args[0] == "wszystkie":
+        for items in kina.seanse(args[0], args[1]):
+            bot.sendMessage(chat_id = update.message.chat_id, text = "\n" +"".join(items))
+        return None
     bot.sendMessage(chat_id = update.message.chat_id, text = "\n\n" +"\n".join(kina.seanse(args[0], args[1])))
+    return None
 
 kino_handler = CommandHandler('kino', kino, pass_args=True)
 dispatcher.add_handler(kino_handler)
 
-#
+
 def pogoda (bot, update):
     global maltaUrl
-    bot.sendMessage(chat_id = update.message.chat_id, text = urlMaker())
+    bot.sendMessage(chat_id = update.message.chat_id, text = weather.urlMaker())
 
 pogoda_handler = CommandHandler('pogoda', pogoda)
 dispatcher.add_handler(pogoda_handler)
@@ -48,18 +60,3 @@ def arsenal (bot, update):
 
 arsenal_handler = CommandHandler('arsenal', arsenal)
 dispatcher.add_handler(arsenal_handler)
-
-# def kino (bot, update):
-#     global rialtoUrl
-#     global muzaUrl
-#     global maltaUrl
-#     global browarUrl
-#     global piecJedenUrl
-#     bot.sendMessage(chat_id = update.message.chat_id, text = "MULTIKINO MALTA:\n\n" + "\n".join(kina.multikino(maltaUrl)))
-#     bot.sendMessage(chat_id = update.message.chat_id, text = "MULTIKINO BROWAR:\n\n" + "\n".join(kina.multikino(browarUrl)))
-#     bot.sendMessage(chat_id = update.message.chat_id, text = "MULTIKINO 51:\n\n" + "\n".join(kina.multikino(piecJedenUrl)))
-#     bot.sendMessage(chat_id = update.message.chat_id, text = "KINO RIALTO:\n\n" + "\n".join(kina.rialto(rialtoUrl)))
-#     bot.sendMessage(chat_id = update.message.chat_id, text = "KINO MUZA:**\n\n" + "\n".join(kina.muza(muzaUrl)), parse_mode=telegram.ParseMode.MARKDOWN)
-#
-# kino_handler = CommandHandler('kino', kino)
-# dispatcher.add_handler(kino_handler)

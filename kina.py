@@ -2,51 +2,58 @@ import urllib.request
 import datetime
 from bs4 import BeautifulSoup
 
-browarUrl = ["Multikino+Stary+Browar-633", "Multikino Stary Browar"]
-apolloUrl = ["Apollo-70", "Kino Apollo"]
-bulgarska19Url = ["Bułgarska+19-1618", "Kino Bułgarska 19"]
-charlieUrl = ["Charlie+Monroe+Kino+Malta-1499", "Kino Charlie Monroe"]
-kinepolisUrl = ["Cinema+City+Kinepolis-624", "Cinema City Kinepolis"]
-plazaUrl = ["Cinema+City+Plaza-568", "Cinema City Plaza"]
-multikino51Url = ["Multikino+51-203", "Multikino 51"]
-multikinoMaltaUrl = ["Multikino+Malta-1434","Multikino Malta"]
-multikinoBrowarUrl = ["Multikino+Stary+Browar-633", "Multikino Stary Browar"]
-muzaUrl= ["Muza-75", "Kino Muza"]
-palacoweUrl = ["Nowe+Kino+Pałacowe-1854", "Nowe Kino Pałacowe"]
-rialtoUrl = ["Rialto-78", "Kino Rialto"]
+urls = {"browarUrl" : ["Multikino+Stary+Browar-633", "Multikino Stary Browar"],
+"apolloUrl" : ["Apollo-70", "Kino Apollo"],
+"bulgarska19Url" : ["Bu%C5%82garska+19-1618", "Kino Bułgarska 19"],
+"charlieUrl" : ["Charlie+Monroe+Kino+Malta-1499", "Kino Charlie Monroe"],
+"kinepolisUrl" : ["Cinema+City+Kinepolis-624", "Cinema City Kinepolis"],
+"plazaUrl" : ["Cinema+City+Plaza-568", "Cinema City Plaza"],
+"multikino51Url" : ["Multikino+51-203", "Multikino 51"],
+"multikinoMaltaUrl" : ["Multikino+Malta-1434","Multikino Malta"],
+"multikinoBrowarUrl" : ["Multikino+Stary+Browar-633", "Multikino Stary Browar"],
+"muzaUrl": ["Muza-75", "Kino Muza"],
+"palacoweUrl" : ["Nowe+Kino+Pa%C5%82acowe-1854", "Nowe Kino Pałacowe"],
+"rialtoUrl" : ["Rialto-78", "Kino Rialto"]}
+
+def seanse(nazwaKina="wszystkie", day=0):
+    global urls
+    if int(day) > 7 or int(day) < 0:
+        day = 0
+    kinoUrl = setKino(nazwaKina)
+    if kinoUrl == "0":
+        return wszystkie(urls, str(day))
+    else:
+        return returner(assigner(kinoUrl[0], str(day)), kinoUrl[1])
+
+def setKino(kino):
+    global urls
+    kino = str(kino)
+    return {
+        "browar" : urls["browarUrl"],
+        "apollo" : urls["apolloUrl"],
+        "bulgarska" : urls["bulgarska19Url"],
+        "charlie" : urls["charlieUrl"],
+        "kinepolis" : urls["kinepolisUrl"],
+        "plaza" : urls["plazaUrl"],
+        "51" : urls["multikino51Url"],
+        "malta" : urls["multikinoMaltaUrl"],
+        "Browar" : urls["multikinoBrowarUrl"],
+        "muza" : urls["muzaUrl"],
+        "palacowe" : urls["palacoweUrl"],
+        "rialto" : urls["rialtoUrl"],
+        "wszystkie" : "0",
+    }[kino]
 
 def assigner (arg, day):
     return BeautifulSoup(urllib.request.urlopen("http://www.filmweb.pl/showtimes/Pozna%C5%84/" + arg + "?day="+ str(day)), "html.parser")
 
-def setKino(kino):
-    global browarUrl, apolloUrl, bulgarska19Url, charlieUrl, kinepolisUrl, plazaUrl, multikino51Url, multikinoMaltaUrl, multikinoBrowarUrl, muzaUrl, palacoweUrl, rialtoUrl
-    kino = str(kino)
-    return {
-        "palacowe" : palacoweUrl,
-        "browar" : browarUrl,
-        "apollo" : apolloUrl,
-        "bulgarska" : bulgarska19Url,
-        "charlie" : charlieUrl,
-        "kinepolis" : kinepolisUrl,
-        "plaza" : plazaUrl,
-        "51" : multikino51Url,
-        "malta" : multikinoMaltaUrl,
-        "Browar" : multikinoBrowarUrl,
-        "muza" : muzaUrl,
-        "palacowe" : palacoweUrl,
-        "rialto" : rialtoUrl,
-        "wszystkie" : rialtoUrl,
-    }[kino]
 
 # Multikina Malta
-def seanse(day=0, nazwaKina="wszystkie"):
-    if int(day) > 7 or int(day) < 0:
-        day = 0
-    kinoArray = setKino(nazwaKina)
-    kino = assigner(kinoArray[0], str(day))
-    kinoDiv = kino.find("ul", "cinema-films")
+
+def returner(assigned, nazwaKina):
+    kinoDiv = assigned.find("ul", "cinema-films")
     array = []
-    array.append(kinoArray[1]+"\n")
+    array.append(nazwaKina+"\n")
     for child in kinoDiv.children:
         timeArray = []
         title = child.find("a", "filmTitle").contents[0]
@@ -57,3 +64,12 @@ def seanse(day=0, nazwaKina="wszystkie"):
         arrayTemp.append(" ".join(timeArray))
         array.append(" / ".join(arrayTemp))
     return array
+
+def wszystkie(urls, day):
+    array = []
+    for key, value in urls.items():
+        a = returner(assigner(value[0], str(day)), value[1])
+        array.append("\n\n" +"\n".join(a))
+    return array
+
+#print(seanse("muza"))
