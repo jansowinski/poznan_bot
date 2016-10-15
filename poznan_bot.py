@@ -16,7 +16,7 @@ dispatcher = updater.dispatcher
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 def start(bot, update):
-    bot.sendMessage(chat_id = update.message.chat_id, text = "POGODA:\n/pogoda\nREPERTUARY:\n/kino *<nazwa> **<ilość dni od dzisia>\n(np. /kino muza 1)\n\nObsługiwane kina (komendy, jak nazwy tutaj):\nbrowar\n51\nmalta\nkinepolis\nplaza\ncharlie\npalacowe\nmuza\nrialto\nbulgarska\napollo\nwszystkie")
+    bot.sendMessage(chat_id = update.message.chat_id, text = "POGODA:\n/pogoda\n\nREPERTUARY:\n/kino *<nazwa> **<ilość dni od dzisia>\n(np. /kino muza 1)\n\nObsługiwane kina (komendy, jak nazwy tutaj):\nbrowar\n51\nmalta\nkinepolis\nplaza\ncharlie\npalacowe\nmuza\nrialto\nbulgarska\napollo\nwszystkie")
 
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)

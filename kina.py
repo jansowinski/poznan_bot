@@ -15,6 +15,9 @@ urls = {"browarUrl" : ["Multikino+Stary+Browar-633", "Multikino Stary Browar"],
 "palacoweUrl" : ["Nowe+Kino+Pa%C5%82acowe-1854", "Nowe Kino Pałacowe"],
 "rialtoUrl" : ["Rialto-78", "Kino Rialto"]}
 
+
+# sprawdza poprawność zmiennych które dostaje i wysyła go dalej
+
 def seanse(nazwaKina="wszystkie", day=0):
     global urls
     if int(day) > 7 or int(day) < 0:
@@ -25,6 +28,8 @@ def seanse(nazwaKina="wszystkie", day=0):
     else:
         return returner(assigner(kinoUrl[0], str(day)), kinoUrl[1])
 
+
+# Dostaje nazwę kina, zwraca array z [0] - stringiem z fragmentem linka, [1] - stringiem z nazwą kina
 def setKino(kino):
     global urls
     kino = str(kino)
@@ -44,11 +49,12 @@ def setKino(kino):
         "wszystkie" : "0",
     }[kino]
 
-def assigner (arg, day):
-    return BeautifulSoup(urllib.request.urlopen("http://www.filmweb.pl/showtimes/Pozna%C5%84/" + arg + "?day="+ str(day)), "html.parser")
+# parsuje dokumeny na podstawie fragmentu linka który dostaje (urlLink) i dnia
+def assigner (urlLink, day):
+    return BeautifulSoup(urllib.request.urlopen("http://www.filmweb.pl/showtimes/Pozna%C5%84/" + urlLink + "?day="+ str(day)), "html.parser")
 
 
-# Multikina Malta
+# zwraca repertuar na podstawie sparsowanego dokumentu który dostaje (assigned)
 
 def returner(assigned, nazwaKina):
     kinoDiv = assigned.find("ul", "cinema-films")
@@ -65,11 +71,11 @@ def returner(assigned, nazwaKina):
         array.append(" / ".join(arrayTemp))
     return array
 
+# zwraca wszystkie repertuary na podstawie danego dnia (day)
+
 def wszystkie(urls, day):
     array = []
     for key, value in urls.items():
         a = returner(assigner(value[0], str(day)), value[1])
         array.append("\n\n" +"\n".join(a))
     return array
-
-#print(seanse("muza"))
