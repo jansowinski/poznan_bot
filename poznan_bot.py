@@ -8,6 +8,7 @@ import kina
 import weather
 from telegram.ext import Updater
 from telegram.ext import CommandHandler
+from galeria import arsenalUrl
 
 updater = Updater(token='261419062:AAFe2GkE3xUgDf3ZdMu7qmgCf9CLOTWgg6E')
 
@@ -48,7 +49,6 @@ dispatcher.add_handler(kino_handler)
 
 
 def pogoda (bot, update):
-    global maltaUrl
     bot.sendMessage(chat_id = update.message.chat_id, text = weather.urlMaker())
 
 pogoda_handler = CommandHandler('pogoda', pogoda)
