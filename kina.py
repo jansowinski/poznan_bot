@@ -13,7 +13,8 @@ urls = {"browarUrl" : ["Multikino+Stary+Browar-633", "Multikino Stary Browar"],
 "multikinoBrowarUrl" : ["Multikino+Stary+Browar-633", "Multikino Stary Browar"],
 "muzaUrl": ["Muza-75", "Kino Muza"],
 "palacoweUrl" : ["Nowe+Kino+Pa%C5%82acowe-1854", "Nowe Kino Pałacowe"],
-"rialtoUrl" : ["Rialto-78", "Kino Rialto"]}
+"rialtoUrl" : ["Rialto-78", "Kino Rialto"],
+"heliosUrl" : ["Helios-1943", "Kino Helios"]}
 
 
 # sprawdza poprawność zmiennych które dostaje i wysyła go dalej
@@ -46,6 +47,7 @@ def setKino(kino):
         "muza" : urls["muzaUrl"],
         "palacowe" : urls["palacoweUrl"],
         "rialto" : urls["rialtoUrl"],
+        "helios" : urls["heliosUrl"],
         "wszystkie" : "0",
     }[kino]
 
@@ -64,7 +66,7 @@ def returner(assigned, nazwaKina):
         timeArray = []
         title = child.find("a", "filmTitle").contents[0]
         for item in child.find("ul", "hoursList").find_all("li"):
-            timeArray.append(item.contents[0])
+            timeArray.append(item.contents[0].contents[0])
         arrayTemp = []
         arrayTemp.append(title)
         arrayTemp.append(" ".join(timeArray))
