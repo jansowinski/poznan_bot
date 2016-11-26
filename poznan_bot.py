@@ -8,9 +8,13 @@ import kina
 import weather
 from telegram.ext import Updater
 from telegram.ext import CommandHandler
+from telegram.ext import MessageHandler
+from telegram.ext import Filters
 from galeria import arsenalUrl
 
-updater = Updater(token='261419062:AAFe2GkE3xUgDf3ZdMu7qmgCf9CLOTWgg6E')
+updater = Updater(token='261419062:AAFe2GkE3xUgDf3ZdMu7qmgCf9CLOTWgg6E') #(poznan_bot)
+#updater = Updater(token='303754093:AAGCVT4cx0-h21NDKboRxnJzenxiqDxkAOA') #(janko_bot)
+
 
 dispatcher = updater.dispatcher
 
@@ -23,6 +27,18 @@ start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
 
 updater.start_polling()
+
+
+
+def echo(bot, update):
+    loc_lon = str(round(update.to_dict()["message"]["location"]["longitude"], 2))
+    loc_lat = str(round(update.to_dict()["message"]["location"]["latitude"], 2))
+    yr = "http://api.met.no/weatherapi/locationforecast/1.9/"
+    bot.sendMessage(chat_id = update.message.chat_id, text = yr + "?lat=" + loc_lat + ";lon=" + loc_lon)
+
+location_handler = MessageHandler([Filters.location], echo)
+dispatcher.add_handler(location_handler)
+
 
 def kino (bot, update, args):
     if len(args) == 0:
