@@ -11,5 +11,5 @@ git clone https://github.com/iansowinski/poznan_bot.git
 create bot and get bot token [here](http://telegram.me/BotFather)
 
 ```
-your_token > token
+echo "your_token" > token
 ```
