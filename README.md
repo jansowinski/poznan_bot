@@ -1,4 +1,4 @@
-#Poznan Bot
+# Poznan Bot
 
 Telegram chatbot for telegram power-users from Poznan/Poland.
 
