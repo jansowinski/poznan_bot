@@ -12,7 +12,9 @@ from telegram.ext import MessageHandler
 from telegram.ext import Filters
 from galeria import arsenalUrl
 
-updater = Updater(token='261419062:AAFe2GkE3xUgDf3ZdMu7qmgCf9CLOTWgg6E') #(poznan_bot)
+token_string = open('token').read().rstrip('\n')
+
+updater = Updater(token=token_string) #(poznan_bot)
 #updater = Updater(token='303754093:AAGCVT4cx0-h21NDKboRxnJzenxiqDxkAOA') #(janko_bot)
 
 
