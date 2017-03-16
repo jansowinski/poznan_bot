@@ -14,9 +14,7 @@ from galeria import arsenalUrl
 
 token_string = open('token').read().rstrip('\n')
 
-updater = Updater(token=token_string) #(poznan_bot)
-#updater = Updater(token='303754093:AAGCVT4cx0-h21NDKboRxnJzenxiqDxkAOA') #(janko_bot)
-
+updater = Updater(token=token_string) 
 
 dispatcher = updater.dispatcher
 
