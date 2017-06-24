@@ -3,6 +3,9 @@ require 'koala'
 require 'json'
 require 'net/http'
 
+# rabbitmq-server
+require 'bunny'
+
 config_json = JSON.parse(File.read('config'))
 token = config_json['telegram']['token']
 subscribed = config_json['facebook']['subscribed']
