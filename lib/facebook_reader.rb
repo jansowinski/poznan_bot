@@ -2,7 +2,7 @@ require "bunny"
 # require 'telegram/bot'
 require 'koala'
 require 'json'
-require 'net/http'
+# require 'net/http'
 
 
 # RabbitMQ config
@@ -44,7 +44,6 @@ loop do
     end
   end
   # sleep 60
-  puts counter
   counter = counter+1
 end
 
