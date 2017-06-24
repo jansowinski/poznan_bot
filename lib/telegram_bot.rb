@@ -1,9 +1,9 @@
 require "bunny"
 require 'telegram/bot'
 require 'json'
-# require 'net/http'
 require './meteo'
 require './cinema'
+
 # RabbitMQ config
 bunny_connection = Bunny.new
 bunny_connection.start
@@ -67,6 +67,21 @@ Telegram::Bot::Client.run(token) do |bot|
         subscribe.publish(JSON.dump(data), :routing_key => subscribe.name)
       end
       bot.api.send_message(chat_id: message.chat.id, text: "success!")
+    when /\/unsubscribe/
+      fanpages = message.text.split(" ") - ["/unsubscribe"]
+      if fanpages.length > 0
+        fanpages.each do |fanpage|
+          data = {"type"=>"unsubscribe",
+                  "user_id"=>"#{message.chat.id}",
+                  "fanpage"=>fanpage}
+          subscribe.publish(JSON.dump(data), :routing_key => subscribe.name)
+        end
+      else
+        data = {"type"=>"unsubscribe",
+                "user_id"=>"#{message.chat.id}",
+                "fanpage"=>"all"}
+        subscribe.publish(JSON.dump(data), :routing_key => subscribe.name)
+      end
     end
   end
 end
