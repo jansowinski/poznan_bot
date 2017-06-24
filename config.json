@@ -1,0 +1,14 @@
+{
+	"telegram":{
+		"token": "",
+		"chat_id": ""
+	},
+	"facebook":
+	{
+		"app_id": "",
+		"app_access_token": "",
+		"app_secret": "",
+		"access_token": "",
+		"subscribed": [""]
+	}
+}
