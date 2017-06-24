@@ -3,9 +3,9 @@ require 'net/http'
 require 'uri'
 require 'nokogiri'
 class Cinema
+  attr_reader :theatres
   def initialize
-    @urls = {"browarUrl" => ["Multikino+Stary+Browar-633", "Multikino Stary Browar"],
-            "apolloUrl" => ["Apollo-70", "Kino Apollo"],
+    @urls = {"apolloUrl" => ["Apollo-70", "Kino Apollo"],
             "bulgarska19Url" => ["Bu%C5%82garska+19-1618", "Kino Bułgarska 19"],
             "charlieUrl" => ["Charlie+Monroe+Kino+Malta-1499", "Kino Charlie Monroe"],
             "kinepolisUrl" => ["Cinema+City+Kinepolis-624", "Cinema City Kinepolis"],
@@ -17,6 +17,11 @@ class Cinema
             "palacoweUrl" => ["Nowe+Kino+Pa%C5%82acowe-1854", "Nowe Kino Pałacowe"],
             "rialtoUrl" => ["Rialto-78", "Kino Rialto"],
             "heliosUrl" => ["Helios-1943", "Kino Helios"]}
+    @theatres = []
+    @urls.each do |key, value|
+      @theatres << (value[1].split(" ") - ["Multikino", "Kino", "Cinema", "City", "Nowe", "Poznań"]).join(" ")
+    end
+    @theatres.map(&:downcase)
   end
   def seanses(cinema_name="wszystkie", day=0)
     if day.to_i > 7 or day.to_i < 0
@@ -31,7 +36,6 @@ class Cinema
   end
   def set_cinema(cinema)
     hash = {
-        "browar" => @urls["browarUrl"],
         "apollo" => @urls["apolloUrl"],
         "bulgarska" => @urls["bulgarska19Url"],
         "charlie" => @urls["charlieUrl"],
@@ -39,9 +43,9 @@ class Cinema
         "plaza" => @urls["plazaUrl"],
         "51" => @urls["multikino51Url"],
         "malta" => @urls["multikinoMaltaUrl"],
-        "Browar" => @urls["multikinoBrowarUrl"],
+        "browar" => @urls["multikinoBrowarUrl"],
         "muza" => @urls["muzaUrl"],
-        "palacowe" => @urls["palacoweUrl"],
+        "pałacowe" => @urls["palacoweUrl"],
         "rialto" => @urls["rialtoUrl"],
         "helios" => @urls["heliosUrl"],
         "wszystkie" => "0",
@@ -54,9 +58,6 @@ class Cinema
     return Nokogiri::HTML(response)
   end
   def returner(assigned, cinema_name)
-    uri = URI.parse("http://www.filmweb.pl/showtimes/Pozna%C5%84/Apollo-70")
-    response = Net::HTTP.get_response(uri).body
-    assigned = Nokogiri::HTML(response)
 
     cinema_div = assigned.xpath("//ul[@class='cinema-films']/li")
     array = []
