@@ -1,4 +1,3 @@
 nohup.out
-.pyc
-__pycache__/
-token
+config.json
+memory.json
