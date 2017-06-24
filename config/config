@@ -1,0 +1,12 @@
+{
+  "telegram":{
+    "token": "",
+  },
+  "facebook":
+  {
+    "app_id": "",
+    "app_access_token": "",
+    "app_secret": "",
+    "access_token": "",
+  }
+}
