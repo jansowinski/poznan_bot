@@ -88,10 +88,11 @@ class API
     if @floating_towns.include?(town)
       id = @data[voievodship][town]
     else
-      if @data[voievodship][shire.downcase][town] != nil
+      if @data[voievodship] != nil and @data[voievodship][shire.downcase] != nil and @data[voievodship][shire.downcase][town]
         id = @data[voievodship][shire.downcase][town] 
       else 
-        return "niestety, nie znam tej lokalizacji :/"
+        emoji = ["😏","😢","😭","️🌧"].sample
+        return "niestety, nie znam tej lokalizacji #{emoji}"
       end
     end
     return "http://www.meteo.pl/um/php/meteorogram_id_um.php?ntype=0u&id=#{id}"
