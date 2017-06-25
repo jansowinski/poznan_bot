@@ -20,6 +20,7 @@ token = config_json['telegram']['token']
 # Libs
 weather = Meteo.new
 cinema = Cinema.new
+movie = Movie.new
 
 # Code
 Telegram::Bot::Client.run(token) do |bot|
@@ -30,7 +31,7 @@ Telegram::Bot::Client.run(token) do |bot|
   bot.listen do |message|
     case message.text
     when '/start', '/help'
-      bot.api.send_message(chat_id: message.chat.id, text: "*POGODA W POZNANIU:*\n/pogoda\n\n*REPERTUARY:*\n/kino - repertuar na dziś\n/kino jutro - repertuar na jutro\n/kino pojutrze - repertuar na pojutrze\n\n*POWIADOMIENIA Z FANPAGE*\n/subscribe <nazwa / link fanpage> - np. /subscribe Reuters albo /subscribe https://m.facebook.com/Reuters/\n/unsubscribe <nazwa / link fanpage> - analogicznie do /subscribe\n/unsubscribe - odsubskrybuj wszystkie fanpage", parse_mode: 'Markdown')
+      bot.api.send_message(chat_id: message.chat.id, text: "*POGODA W POZNANIU:*\n/pogoda\n\n*REPERTUARY:*\n/kino - repertuar na dziś\n/kino jutro - repertuar na jutro\n/kino pojutrze - repertuar na pojutrze\n/film <nazwa filmu> - bot postara się znaleźć repertuar twojego filmu. Fragment tytułu wystarczy\n\n*POWIADOMIENIA Z FANPAGE*\n/subscribe <nazwa / link fanpage> - np. /subscribe Reuters albo /subscribe https://m.facebook.com/Reuters/\n/unsubscribe <nazwa / link fanpage> - analogicznie do /subscribe\n/unsubscribe - odsubskrybuj wszystkie fanpage", parse_mode: 'Markdown')
     when /\/pogoda/
       bot.api.send_message(chat_id: message.chat.id, text: weather.get)
     when /\/kino/
@@ -67,6 +68,18 @@ Telegram::Bot::Client.run(token) do |bot|
       #     end
       #   end
       # end
+    when /\/film/
+      searched_movie = message.text.split(" ") - ["/film"]
+      searched_movie = searched_movie.join(" ")
+      if searched_movie.gsub(" ","").length > 0
+        found = movie.seanses(searched_movie)
+        if found.length > 0
+          bot.api.send_message(chat_id: message.chat.id, text: found, parse_mode: 'Markdown')
+        else
+          emoji = ["😏","😢","😭","️🌧"].sample
+          bot.api.send_message(chat_id: message.chat.id, text: "Niestety, nie znalazłem twojego filmu #{emoji}")
+        end
+      end
     when /\/subscribe/
       fanpages = message.text.split(" ") - ["/subscribe"]
       fanpages.each do |fanpage|

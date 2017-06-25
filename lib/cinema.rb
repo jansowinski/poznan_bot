@@ -84,3 +84,62 @@ class Cinema
     return array
   end
 end
+
+class Movie
+  def initialize
+    @url = "http://www.filmweb.pl/showtimes/Pozna%C5%84"
+    @movie_hash = {}
+    get_movies_list
+  end
+  def seanses (argument)
+    data = search(argument)
+    return "" if data == nil
+    message = "*#{data[1].upcase}*"
+    data[0].each do |cinema, variants|
+      message += "\n\n*#{cinema.gsub(' (Poznań)','')}*"
+      variants.each do |variant, hours|
+        message += "#{variant} : #{hours.join(' ')}\n"
+      end
+    end
+    return message
+  end
+  def get_movies_list
+    uri = URI.parse(@url)
+    response = Net::HTTP.get_response(uri).body
+    parsed_response = Nokogiri::HTML(response)
+    movie_list = parsed_response.xpath("//ul[@class='city-films']/li")
+    movie_list.each do |item|
+      name = item.xpath("div[@class='area']").css('.name').text
+      link = item.xpath("div[@class='area']").css('.name').xpath("@href").text
+      @movie_hash[name] = "http://www.filmweb.pl#{link}"
+    end
+  end
+  def search (phrase)
+    phrase.downcase!
+    get_movies_list
+    @movie_hash.each do |key, value|
+      return hours(@movie_hash[key], key) if key.downcase.include?(phrase)
+    end
+    return nil
+  end
+  def hours (url, title)
+    uri = URI.parse(url)
+    response = Net::HTTP.get_response(uri).body
+    parsed_response = Nokogiri::HTML(response)
+    cinemas = parsed_response.css('ul.film-cinemas').css('ul.film-cinemas').xpath("li")
+    data = {}
+    cinemas.each do |cinema|
+      name = cinema.xpath("h3").text
+      variants = {}
+      cinema.xpath("div/div").each do |variant|
+        variants[variant.xpath("div").text] = []
+        variant.xpath("ul/li").each do |item|
+          variants[variant.xpath("div").text] << item.text
+        end
+      end
+      data[name] = variants
+    end
+    return [data, title]
+  end
+  private :get_movies_list, :search, :hours
+end
