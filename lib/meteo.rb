@@ -109,22 +109,20 @@ class API
   def get_data(voievodship, shire, town)
     if @floating_towns.include?(town)
       id = @data[voievodship][town]
+      description = "#{voievodship.capitalize} - #{town}"
     else
       if @data[voievodship] != nil and @data[voievodship][shire.downcase] != nil and @data[voievodship][shire.downcase][town]
         id = @data[voievodship][shire.downcase][town] 
+        description = "#{voievodship.capitalize} - pow. #{shire}, #{town}"
       else 
         emoji = ["😏","😢","😭","️🌧"].sample
         return "niestety, nie znam tej lokalizacji #{emoji}"
       end
     end
-    # return "http://www.meteo.pl/um/php/meteorogram_id_um.php?ntype=0u&id=#{id}"
     uri = URI.parse("http://www.meteo.pl/um/php/meteorogram_id_um.php?ntype=0u&id=#{id}")
     response = Net::HTTP.get_response(uri).body
     x = response[/var act_x = (.*);var/,1]
     y = response[/var act_y = (.*);/,1]
-    # return nil
-    return "http://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&fdate=#{date_setter}#{hour_num}&row=#{y}&col=#{x}&lang=pl"
+    return [description, "http://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&fdate=#{date_setter}#{hour_num}&row=#{y}&col=#{x}&lang=pl"]
   end
 end
-a = GPS.new()
-puts a.get_json(52.419923, 16.908526)

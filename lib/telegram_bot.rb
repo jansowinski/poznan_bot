@@ -33,7 +33,8 @@ Telegram::Bot::Client.run(token) do |bot|
     if message.location != nil
       puts message
       begin
-        bot.api.send_message(chat_id: message.chat.id, text: gps.get_json(message.location.latitude, message.location.longitude))
+        forecast = gps.get_json(message.location.latitude, message.location.longitude)
+        bot.api.send_photo(chat_id: message.chat.id, photo: forecast[1], caption: forecast[0])
       end
     end
     case message.text
