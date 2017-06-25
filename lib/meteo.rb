@@ -84,6 +84,28 @@ class API
     end
   end
 
+  def date_setter
+    if hour_num() == "18"
+      return Time.now.strftime('%Y%m%d').to_i - 1
+    else
+      return Time.now.strftime('%Y%m%d')
+    end
+  end
+
+  def hour_num
+    hour_now = Time.now.hour
+    if hour_now >= 7 and hour_now < 13
+      return "00"
+    elsif hour_now >= 13 and hour_now < 19
+      return "06"
+    elsif hour_now >= 19 or (hour_now  >= 0 and hour_now < 1)
+      return "12"
+    elsif hour_now >= 1 and hour_now < 7
+      return "18"
+    else
+      return "00"
+    end
+  end
   def get_data(voievodship, shire, town)
     if @floating_towns.include?(town)
       id = @data[voievodship][town]
@@ -95,11 +117,14 @@ class API
         return "niestety, nie znam tej lokalizacji #{emoji}"
       end
     end
-    return "http://www.meteo.pl/um/php/meteorogram_id_um.php?ntype=0u&id=#{id}"
-    # uri = URI.parse("http://www.meteo.pl/um/php/meteorogram_id_um.php?ntype=0u&id=#{id}")
-    # response = Nokogiri::HTML(Net::HTTP.get_response(uri).body)
-    # return response.css("img#meteorogram")
+    # return "http://www.meteo.pl/um/php/meteorogram_id_um.php?ntype=0u&id=#{id}"
+    uri = URI.parse("http://www.meteo.pl/um/php/meteorogram_id_um.php?ntype=0u&id=#{id}")
+    response = Net::HTTP.get_response(uri).body
+    x = response[/var act_x = (.*);var/,1]
+    y = response[/var act_y = (.*);/,1]
+    # return nil
+    return "http://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&fdate=#{date_setter}#{hour_num}&row=#{y}&col=#{x}&lang=pl"
   end
 end
-# a = GPS.new()
-# puts a.get_json(52.419923, 16.908526)
+a = GPS.new()
+puts a.get_json(52.419923, 16.908526)
