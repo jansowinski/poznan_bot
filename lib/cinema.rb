@@ -96,7 +96,7 @@ class Movie
     return "" if data == nil
     message = "*#{data[1].upcase}*"
     data[0].each do |cinema, variants|
-      message += "\n\n*#{cinema.gsub(' (Poznań)','')}*"
+      message += "\n*#{cinema.gsub(' (Poznań)','')}*\n"
       variants.each do |variant, hours|
         message += "#{variant} : #{hours.join(' ')}\n"
       end
