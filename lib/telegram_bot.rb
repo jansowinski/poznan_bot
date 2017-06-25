@@ -34,7 +34,11 @@ Telegram::Bot::Client.run(token) do |bot|
       puts message
       begin
         forecast = gps.get_json(message.location.latitude, message.location.longitude)
-        bot.api.send_photo(chat_id: message.chat.id, photo: forecast[1], caption: forecast[0])
+        if forecast.class != Array
+          bot.api.send_message(chat_id: message.chat.id, text: forecast)
+        else
+          bot.api.send_photo(chat_id: message.chat.id, photo: forecast[1], caption: forecast[0])
+        end
       end
     end
     case message.text
