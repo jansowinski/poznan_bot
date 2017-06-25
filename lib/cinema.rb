@@ -103,7 +103,8 @@ class Movie
     data[0].each do |cinema, variants|
       message += "\n*#{cinema.gsub(' (Poznań)','')}*\n"
       variants.each do |variant, hours|
-        message += "#{variant} : #{hours.join(' ')}\n"
+        dots = variant != "" ? ': ' : '' 
+        message += variant + dots + hours.join(' ') + "\n"
       end
     end
     return message
