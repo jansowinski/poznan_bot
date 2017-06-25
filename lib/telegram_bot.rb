@@ -75,9 +75,11 @@ Telegram::Bot::Client.run(token) do |bot|
                 "user_id"=>"#{message.chat.id}",
                 "fanpage"=>fanpage}
         subscribe.publish(JSON.dump(data), :routing_key => subscribe.name)
-        bot.api.send_message(chat_id: message.chat.id, text: "sukces! Zasubskrybowano #{fanpage}!")
+        emoji = ["🎉", "💥","👍","🚀","💪"].sample
+        bot.api.send_message(chat_id: message.chat.id, text: "sukces! Zasubskrybowano #{fanpage}! #{emoji}")
       end
-      bot.api.send_message(chat_id: message.chat.id, text: "sukces!")
+      emoji = ["😏","😢","😭","👎","️🌧","❗️"].sample
+      bot.api.send_message(chat_id: message.chat.id, text: "Ups! Zapomniałeś podać fanpage #{emoji}") if fanpages.length == 0
     when /\/unsubscribe/
       fanpages = message.text.split(" ") - ["/unsubscribe"]
       if fanpages.length > 0
@@ -87,7 +89,8 @@ Telegram::Bot::Client.run(token) do |bot|
                   "user_id"=>"#{message.chat.id}",
                   "fanpage"=>fanpage}
           subscribe.publish(JSON.dump(data), :routing_key => subscribe.name)
-          bot.api.send_message(chat_id: message.chat.id, text: "Sukces! Odsubskrybowano #{fanpage}!")
+          emoji = ["🎉", "💥","👍","🚀","💪"].sample
+          bot.api.send_message(chat_id: message.chat.id, text: "Sukces! Odsubskrybowano #{fanpage}! #{emoji}")
         end
       else
         data = {"type"=>"unsubscribe",
@@ -95,7 +98,8 @@ Telegram::Bot::Client.run(token) do |bot|
                 "fanpage"=>"all"}
         subscribe.publish(JSON.dump(data), :routing_key => subscribe.name)
       end
-      bot.api.send_message(chat_id: message.chat.id, text: "Sukces! Odsubskrybowano wszystko!")
+      emoji = ["🎉", "💥","👍","🚀","💪"].sample
+      bot.api.send_message(chat_id: message.chat.id, text: "Sukces! Odsubskrybowano wszystko! #{emoji}")
     end
   end
 end
