@@ -86,10 +86,15 @@ class Cinema
 end
 
 class Movie
+  attr_reader :movies
   def initialize
     @url = "http://www.filmweb.pl/showtimes/Pozna%C5%84"
     @movie_hash = {}
     get_movies_list
+  end
+  def movies
+    get_movies_list
+    return "_#{@movie_hash.keys[0..-2].join("_\n_")}_"
   end
   def seanses (argument)
     data = search(argument)
@@ -112,6 +117,7 @@ class Movie
       name = item.xpath("div[@class='area']").css('.name').text
       link = item.xpath("div[@class='area']").css('.name').xpath("@href").text
       @movie_hash[name] = "http://www.filmweb.pl#{link}"
+      @movie_hash.keys
     end
   end
   def search (phrase)
