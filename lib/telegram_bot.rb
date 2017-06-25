@@ -30,7 +30,7 @@ Telegram::Bot::Client.run(token) do |bot|
   bot.listen do |message|
     case message.text
     when '/start', '/help'
-      bot.api.send_message(chat_id: message.chat.id, text: "POGODA W POZNANIU:\n/pogoda\n\nREPERTUARY:\n/kino - repertuar na dziś\n/kino jutro - repertuar na jutro\n/kino pojutrze - repertuar na pojutrze\n\nPOWIADOMIENIA Z FANPAGE\n/subscribe <nazwa / link fanpage> - np. /subscribe Reuters albo /subscribe https://m.facebook.com/Reuters/\n/unsubscribe <nazwa / link fanpage> - analogicznie do /subscribe\n/unsubscribe - odsubskrybuj wszystkie fanpage")
+      bot.api.send_message(chat_id: message.chat.id, text: "*POGODA W POZNANIU:*\n/pogoda\n\n*REPERTUARY:*\n/kino - repertuar na dziś\n/kino jutro - repertuar na jutro\n/kino pojutrze - repertuar na pojutrze\n\n*POWIADOMIENIA Z FANPAGE*\n/subscribe <nazwa / link fanpage> - np. /subscribe Reuters albo /subscribe https://m.facebook.com/Reuters/\n/unsubscribe <nazwa / link fanpage> - analogicznie do /subscribe\n/unsubscribe - odsubskrybuj wszystkie fanpage", parse_mode: 'Markdown')
     when /\/pogoda/
       bot.api.send_message(chat_id: message.chat.id, text: weather.get)
     when /\/kino/
@@ -40,13 +40,13 @@ Telegram::Bot::Client.run(token) do |bot|
       args.map(&:downcase)
       if args.include?("jutro")
         date = 1
-        bot.api.send_message(chat_id: message.chat.id, text: "REPERTUAR NA JUTRO")
+        bot.api.send_message(chat_id: message.chat.id, text: "*REPERTUAR NA JUTRO*", parse_mode: 'Markdown')
       elsif args.include?("pojutrze")
         date = 2
-        bot.api.send_message(chat_id: message.chat.id, text: "REPERTUAR NA POJUTRZE")
+        bot.api.send_message(chat_id: message.chat.id, text: "*REPERTUAR NA POJUTRZE*", parse_mode: 'Markdown')
       else
 
-        bot.api.send_message(chat_id: message.chat.id, text: "REPERTUAR NA DZIŚ")
+        bot.api.send_message(chat_id: message.chat.id, text: "*REPERTUAR NA DZIŚ*", parse_mode: 'Markdown')
       end
       cinema.seanses("wszystkie", date).each do |cinema|
         bot.api.send_message(chat_id: message.chat.id, text: cinema)
