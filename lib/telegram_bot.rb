@@ -21,6 +21,7 @@ token = config_json['telegram']['token']
 weather = Meteo.new
 cinema = Cinema.new
 movie = Movie.new
+gps = GPS.new
 
 # Code
 Telegram::Bot::Client.run(token) do |bot|
@@ -29,6 +30,12 @@ Telegram::Bot::Client.run(token) do |bot|
     bot.api.send_message(chat_id: data['chat_id'], text: data['message'])
   end
   bot.listen do |message|
+    if message.location != nil
+      puts message
+      begin
+        bot.api.send_message(chat_id: message.chat.id, text: gps.get_json(message.location.latitude, message.location.longitude))
+      end
+    end
     case message.text
     when '/start', '/help'
       bot.api.send_message(chat_id: message.chat.id, text: "*POGODA W POZNANIU:*\n/pogoda\n\n*REPERTUARY:*\n/kino - repertuar na dziś\n/kino jutro - repertuar na jutro\n/kino pojutrze - repertuar na pojutrze\n/film <nazwa filmu> - bot postara się znaleźć repertuar twojego filmu. Fragment tytułu wystarczy\n/filmy - lista filmów granych dzisiaj w Poznaniu\n\n*POWIADOMIENIA Z FANPAGE*\n/subscribe <nazwa / link fanpage> - np. /subscribe Reuters albo /subscribe https://m.facebook.com/Reuters/\n/unsubscribe <nazwa / link fanpage> - analogicznie do /subscribe\n/unsubscribe - odsubskrybuj wszystkie fanpage", parse_mode: 'Markdown')
