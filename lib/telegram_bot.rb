@@ -29,23 +29,32 @@ Telegram::Bot::Client.run(token) do |bot|
   end
   bot.listen do |message|
     case message.text
+    when '/start', '/help'
+      bot.api.send_message(chat_id: message.chat.id, text: "POGODA W POZNANIU:\n/pogoda\n\nREPERTUARY:\n/kino - repertuar na dziś\n/kino jutro - repertuar na jutro\n/kino pojutrze - repertuar na pojutrze\n\nPOWIADOMIENIA Z FANPAGE\n/subscribe <nazwa / link fanpage> - np. /subscribe Reuters albo /subscribe https://m.facebook.com/Reuters/\n/unsubscribe <nazwa / link fanpage> - analogicznie do /subscribe\n/unsubscribe - odsubskrybuj wszystkie fanpage")
     when /\/pogoda/
       bot.api.send_message(chat_id: message.chat.id, text: weather.get)
     when /\/kino/
-      cinema.seanses("wszystkie", 0).each do |cinema|
+      # puts message.text
+      date = 0
+      args = message.text.split(' ') - ["/kino"]
+      args.map(&:downcase)
+      if args.include?("jutro")
+        date = 1
+        bot.api.send_message(chat_id: message.chat.id, text: "REPERTUAR NA JUTRO")
+      elsif args.include?("pojutrze")
+        date = 2
+        bot.api.send_message(chat_id: message.chat.id, text: "REPERTUAR NA POJUTRZE")
+      else
+
+        bot.api.send_message(chat_id: message.chat.id, text: "REPERTUAR NA DZIŚ")
+      end
+      cinema.seanses("wszystkie", date).each do |cinema|
         bot.api.send_message(chat_id: message.chat.id, text: cinema)
       end
+
       # theatres = []
-      # date = 0
-      # args = message.text.split(' ') - ["/kino"]
-      # args.map(&:downcase)
       # args.each do |argument|
       #   theatres << argument if cinema.theatres.include?(argument)
-      # end
-      # if args.include?("jutro")
-      #   date = 1
-      # elsif args.include?("pojutrze")
-      #   date = 2
       # end
       # if theatres.length == 0
       #   cinema.seanses("wszystkie", date).each do |cinema|
@@ -61,20 +70,24 @@ Telegram::Bot::Client.run(token) do |bot|
     when /\/subscribe/
       fanpages = message.text.split(" ") - ["/subscribe"]
       fanpages.each do |fanpage|
+        fanpage = fanpage[/com\/(.*)/,1].gsub(/\/(.*)/, '') if fanpage.include?('http')
         data = {"type"=>"subscribe",
                 "user_id"=>"#{message.chat.id}",
                 "fanpage"=>fanpage}
         subscribe.publish(JSON.dump(data), :routing_key => subscribe.name)
+        bot.api.send_message(chat_id: message.chat.id, text: "sukces! Zasubskrybowano #{fanpage}!")
       end
-      bot.api.send_message(chat_id: message.chat.id, text: "success!")
+      bot.api.send_message(chat_id: message.chat.id, text: "sukces!")
     when /\/unsubscribe/
       fanpages = message.text.split(" ") - ["/unsubscribe"]
       if fanpages.length > 0
         fanpages.each do |fanpage|
+          fanpage = fanpage[/com\/(.*)/,1].gsub(/\/(.*)/, '') if fanpage.include?('http')
           data = {"type"=>"unsubscribe",
                   "user_id"=>"#{message.chat.id}",
                   "fanpage"=>fanpage}
           subscribe.publish(JSON.dump(data), :routing_key => subscribe.name)
+          bot.api.send_message(chat_id: message.chat.id, text: "Sukces! Odsubskrybowano #{fanpage}!")
         end
       else
         data = {"type"=>"unsubscribe",
@@ -82,6 +95,7 @@ Telegram::Bot::Client.run(token) do |bot|
                 "fanpage"=>"all"}
         subscribe.publish(JSON.dump(data), :routing_key => subscribe.name)
       end
+      bot.api.send_message(chat_id: message.chat.id, text: "Sukces! Odsubskrybowano wszystko!")
     end
   end
 end

@@ -14,7 +14,7 @@ class Cinema
             "multikinoMaltaUrl" => ["Multikino+Malta-1434","Multikino Malta"],
             "multikinoBrowarUrl" => ["Multikino+Stary+Browar-633", "Multikino Stary Browar"],
             "muzaUrl"=> ["Muza-75", "Kino Muza"],
-            "palacoweUrl" => ["Nowe+Kino+Pa%C5%82acowe-1854", "Nowe Kino Pałacowe"],
+            "palacoweUrl" => ["Kino+Pa%C5%82acowe-1854", "Nowe Kino Pałacowe"],
             "rialtoUrl" => ["Rialto-78", "Kino Rialto"],
             "heliosUrl" => ["Helios-1943", "Kino Helios"]}
     @theatres = []
