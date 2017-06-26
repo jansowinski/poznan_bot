@@ -27,7 +27,8 @@ class Meteo
     end
   end
   def get
-    url_adress = "http://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&fdate=" + date_setter + hour_num + "&row=400&col=180&lang=pl"
+
+    url_adress = "http://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&fdate=" + date_setter.to_s + hour_num.to_s + "&row=400&col=180&lang=pl"
   return url_adress
   end
 end
@@ -36,10 +37,10 @@ class GPS
     @weather = API.new()
   end
   def get_json(lat,lng)
-    # puts "https://maps.googleapis.com/maps/api/geocode/json?latlng=#{lat},#{lng}"
     uri = URI.parse("https://maps.googleapis.com/maps/api/geocode/json?latlng=#{lat},#{lng}")
     response = JSON.parse(Net::HTTP.get_response(uri).body)
     data = {}
+    return @weather.get_data(nil,nil,nil) if response['status'] == 'ZERO_RESULTS'
     response['results'][0]['address_components'].each do |item|
       if item['types'].include?('administrative_area_level_1')
         data['voievodship'] = item['long_name']
@@ -107,15 +108,22 @@ class API
     end
   end
   def get_data(voievodship, shire, town)
+    shire = shire.downcase if shire != nil
+    emoji = ['😏 ','😢 ','😭 ','🌧 '].sample
+    if voievodship == nil
+      return "niestety, nie znam tej lokalizacji #{emoji}"
+    else
+      voievodship = (voievodship.split(' ') - ['województwo','Województwo']).join('') 
+    end
     if @floating_towns.include?(town)
+      puts voievodship
       id = @data[voievodship][town]
       description = "#{voievodship.capitalize} - #{town}"
     else
-      if @data[voievodship] != nil and @data[voievodship][shire.downcase] != nil and @data[voievodship][shire.downcase][town]
+      if @data[voievodship] != nil and @data[voievodship][shire] != nil and @data[voievodship][shire][town]
         id = @data[voievodship][shire.downcase][town] 
         description = "#{voievodship.capitalize} - pow. #{shire}, #{town}"
       else 
-        emoji = ["😏","😢","😭","️🌧"].sample
         return "niestety, nie znam tej lokalizacji #{emoji}"
       end
     end
