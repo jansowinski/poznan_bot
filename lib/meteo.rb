@@ -3,44 +3,32 @@ require 'net/http'
 require 'uri'
 require 'nokogiri'
 require 'json'
-class Meteo
-  def date_setter
-    if hour_num() == "18"
-      return Time.now.strftime('%Y%m%d').to_i - 1
-    else
-      return Time.now.strftime('%Y%m%d')
-    end
-  end
 
-  def hour_num
-    hour_now = Time.now.hour
-    if hour_now >= 7 and hour_now < 13
-      return "00"
-    elsif hour_now >= 13 and hour_now < 19
-      return "06"
-    elsif hour_now >= 19 or (hour_now  >= 0 and hour_now < 1)
-      return "12"
-    elsif hour_now >= 1 and hour_now < 7
-      return "18"
-    else
-      return "00"
-    end
+class Emoji
+  def failure
+    return ['😏','😢','😭','🌧'].sample
   end
-  def get
-
-    url_adress = "http://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&fdate=" + date_setter.to_s + hour_num.to_s + "&row=400&col=180&lang=pl"
-  return url_adress
+  def success
+    return ["🎉", "💥","👍","🚀","💪"].sample
+  end
+  def error
+    return ["😏","😢","😭","👎","️🌧","❗"].sample
   end
 end
-class GPS
-  def initialize
-    @weather = API.new()
-  end
-  def get_json(lat,lng)
+
+class Location
+
+  attr_reader :voievodship, :shire, :town
+  def initialize (lat,lng)
+    @voievodship = nil 
+    @shire = nil 
+    @town = nil
     uri = URI.parse("https://maps.googleapis.com/maps/api/geocode/json?latlng=#{lat},#{lng}")
     response = JSON.parse(Net::HTTP.get_response(uri).body)
     data = {}
-    return @weather.get_data(nil,nil,nil) if response['status'] == 'ZERO_RESULTS'
+    if response['status'] == 'ZERO_RESULTS'
+      return nil
+    end
     response['results'][0]['address_components'].each do |item|
       if item['types'].include?('administrative_area_level_1')
         data['voievodship'] = item['long_name']
@@ -50,10 +38,16 @@ class GPS
         data['town'] = item['long_name']
       end
     end
-    return @weather.get_data(data['voievodship'], data['shire'], data['town'])
+    @voievodship = (data['voievodship'].split(' ') - ['województwo','Województwo']).join('') if data['voievodship'] != nil
+    @shire = data['shire'].downcase if data['shire'] != nil
+    @town = data['town']
   end
+
 end
-class API
+
+class Meteo
+  attr_reader :data, :floating_towns
+
   def initialize
     uri = URI.parse("http://www.meteo.pl/um/php/gpp/search.php")
     voievodships_response = Net::HTTP.get_response(uri).body
@@ -85,6 +79,29 @@ class API
     end
   end
 
+  def get_image(voievodship, shire, town)
+    emoji = Emoji.new
+    if voievodship == nil
+      return "niestety, nie znam tej lokalizacji #{emoji.failure}"
+    end
+    if @floating_towns.include?(town)
+      id = @data[voievodship][town]
+      description = "#{voievodship.capitalize} - #{town}"
+    else
+      if @data[voievodship] != nil and @data[voievodship][shire] != nil and @data[voievodship][shire][town]
+        id = @data[voievodship][shire][town] 
+        description = "#{voievodship.capitalize} - pow. #{shire}, #{town}"
+      else 
+        return "niestety, nie znam tej lokalizacji #{emoji.failure}"
+      end
+    end
+    uri = URI.parse("http://www.meteo.pl/um/php/meteorogram_id_um.php?ntype=0u&id=#{id}")
+    response = Net::HTTP.get_response(uri).body
+    x = response[/var act_x = (.*);var/,1]
+    y = response[/var act_y = (.*);/,1]
+    return [description, "http://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&fdate=#{date_setter}#{hour_num}&row=#{y}&col=#{x}&lang=pl"]
+  end
+
   def date_setter
     if hour_num() == "18"
       return Time.now.strftime('%Y%m%d').to_i - 1
@@ -107,30 +124,5 @@ class API
       return "00"
     end
   end
-  def get_data(voievodship, shire, town)
-    shire = shire.downcase if shire != nil
-    emoji = ['😏 ','😢 ','😭 ','🌧 '].sample
-    if voievodship == nil
-      return "niestety, nie znam tej lokalizacji #{emoji}"
-    else
-      voievodship = (voievodship.split(' ') - ['województwo','Województwo']).join('') 
-    end
-    if @floating_towns.include?(town)
-      puts voievodship
-      id = @data[voievodship][town]
-      description = "#{voievodship.capitalize} - #{town}"
-    else
-      if @data[voievodship] != nil and @data[voievodship][shire] != nil and @data[voievodship][shire][town]
-        id = @data[voievodship][shire.downcase][town] 
-        description = "#{voievodship.capitalize} - pow. #{shire}, #{town}"
-      else 
-        return "niestety, nie znam tej lokalizacji #{emoji}"
-      end
-    end
-    uri = URI.parse("http://www.meteo.pl/um/php/meteorogram_id_um.php?ntype=0u&id=#{id}")
-    response = Net::HTTP.get_response(uri).body
-    x = response[/var act_x = (.*);var/,1]
-    y = response[/var act_y = (.*);/,1]
-    return [description, "http://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&fdate=#{date_setter}#{hour_num}&row=#{y}&col=#{x}&lang=pl"]
-  end
+  private :date_setter, :hour_num
 end
