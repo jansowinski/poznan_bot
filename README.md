@@ -1,4 +1,4 @@
-# Poznan Bot
+# Poznan Bot 💥
 
 Telegram chatbot for telegram power-users from Poznan/Poland.
 
@@ -11,3 +11,9 @@ to make use of it:
 - and paste all required tokens to  ```config/config.json```
 - install [RabbitMQ](rabbitmq.com)
 - ```sh start.sh```
+
+## Ideas for new functions
+  
+  - [ ] make filmweb parser city - agnostic
+  - [ ] add configuration functions - for setting default city for user
+  - [ ] get weather from yr.no (emojis could have some great use here)
