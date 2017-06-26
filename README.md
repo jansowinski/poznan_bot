@@ -17,3 +17,5 @@ to make use of it:
   - [ ] make filmweb parser city - agnostic
   - [ ] add configuration functions - for setting default city for user
   - [ ] get weather from yr.no (emojis could have some great use here)
+  - [ ] make use of rake
+  - [ ] create webhook for production
