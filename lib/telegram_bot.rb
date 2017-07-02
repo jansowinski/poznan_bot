@@ -134,6 +134,8 @@ loop do
         end
       end
     end
+  rescue => error
+    puts error.backtrace
   end
 end
 bunny_connection.close
