@@ -91,7 +91,13 @@ class Meteo
       if @data[voievodship] != nil and @data[voievodship][shire] != nil and @data[voievodship][shire][town]
         id = @data[voievodship][shire][town] 
         description = "#{voievodship.capitalize} - pow. #{shire}, #{town}"
-      else 
+      elsif @data[voievodship][shire] != nil
+        array = []
+        @data[voievodship][shire].each do |key, value|
+          array << key
+        end
+        return "Nie wiem, gdzie to jest #{emoji.failure}. Czy chodziło Ci o któreś z tych miejsc:\n\n#{array.join("\n")}?"
+      else
         return "niestety, nie znam tej lokalizacji #{emoji.failure}"
       end
     end
