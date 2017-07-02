@@ -50,7 +50,7 @@ loop do
         if message.location != nil
           location = Location.new(message.location.latitude, message.location.longitude)
           begin
-            forecast = weather.get_image(location.voievodship, location.shire, location.town)
+            forecast = weather.get_image(location)
             if forecast.class != Array
               bot.api.send_message(chat_id: message.chat.id, text: forecast)
             else

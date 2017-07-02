@@ -18,8 +18,10 @@ end
 
 class Location
 
-  attr_reader :voievodship, :shire, :town
+  attr_reader :voievodship, :shire, :town, :lat, :lng
   def initialize (lat,lng)
+    @lat = lat
+    @lng = lng
     @voievodship = nil 
     @shire = nil 
     @town = nil
@@ -79,7 +81,12 @@ class Meteo
     end
   end
 
-  def get_image(voievodship, shire, town)
+  def get_image(location)
+    voievodship = location.voievodship
+    shire = location.shire
+    town = location.town
+    lat = location.lat
+    lng = location.lng
     emoji = Emoji.new
     if voievodship == nil
       return "niestety, nie znam tej lokalizacji #{emoji.failure}"
@@ -92,13 +99,22 @@ class Meteo
         id = @data[voievodship][shire][town] 
         description = "#{voievodship.capitalize} - pow. #{shire}, #{town}"
       elsif @data[voievodship][shire] != nil
-        array = []
+        difference_hash = {}
         @data[voievodship][shire].each do |key, value|
-          array << key
+          uri = URI.parse(URI.encode("https://maps.googleapis.com/maps/api/geocode/json?address=Poland,#{voievodship},#{shire},#{key}"))
+          response = JSON.parse(Net::HTTP.get_response(uri).body)
+          next if response['status'] == 'ZERO_RESULTS'
+          gps = response['results'][0]['geometry']['location']
+          lat_difference = (lat - gps['lat']).abs
+          lng_difference = (lng - gps['lng']).abs
+          difference = Math.sqrt((lat_difference*lat_difference)+(lng_difference*lng_difference))
+          difference_hash[key] = difference
         end
-        return "Nie wiem, gdzie to jest #{emoji.failure}. Czy chodziło Ci o któreś z tych miejsc:\n\n#{array.join("\n")}?"
+        closest_city = difference_hash.key(difference_hash.values.min)
+        id = @data[voievodship][shire][closest_city]
+        description = "#{voievodship.capitalize} - #{closest_city}"
       else
-        return "niestety, nie znam tej lokalizacji #{emoji.failure}"
+        return "Niestety, nie znam tej lokalizacji #{emoji.failure}"
       end
     end
     uri = URI.parse("http://www.meteo.pl/um/php/meteorogram_id_um.php?ntype=0u&id=#{id}")
