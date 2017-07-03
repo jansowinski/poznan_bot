@@ -63,7 +63,7 @@ loop do
           bot.api.send_message(chat_id: message.chat.id, text: "*POGODA:*\nwyślij swoją lokalizację a otrzymasz obecną prognozę z meteo\n/pogoda w Poznaniu\n\n*REPERTUARY:*\n/kino - repertuar na dziś\n/kino jutro - repertuar na jutro\n/kino pojutrze - repertuar na pojutrze\n/film <nazwa filmu> - bot postara się znaleźć repertuar twojego filmu. Fragment tytułu wystarczy\n/filmy - lista filmów granych dzisiaj w Poznaniu\n\n*POWIADOMIENIA Z FANPAGE*\n/subscribe <nazwa / link fanpage> - np. /subscribe Reuters albo /subscribe https://m.facebook.com/Reuters/\n/unsubscribe <nazwa / link fanpage> - analogicznie do /subscribe\n/unsubscribe - odsubskrybuj wszystkie fanpage", parse_mode: 'Markdown')
         when /\/pogoda/
           location = Location.new(52.469656, 16.953536)
-          forecast = weather.get_image(location.voievodship, location.shire, location.town)
+          forecast = weather.get_image(location)
           bot.api.send_photo(chat_id: message.chat.id, photo: forecast[1], caption: forecast[0])
           # bot.api.send_message(chat_id: message.chat.id, text: "send location")
           # bot.listen do |m|
