@@ -102,7 +102,12 @@ class Meteo
     response = Net::HTTP.get_response(uri).body
     x = response[/var act_x = (.*);var/,1]
     y = response[/var act_y = (.*);/,1]
-    return [description, "http://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&fdate=#{date_setter}#{hour_num}&row=#{y}&col=#{x}&lang=pl"]
+    http_conn = Faraday.new do |builder|
+      builder.adapter Faraday.default_adapter
+    end 
+    response = http_conn.get "http://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&fdate=#{date_setter}#{hour_num}&row=#{y}&col=#{x}&lang=pl"
+    File.open("../cache/images/#{date_setter}_#{voievodship}_#{shire}_#{town}.jpg", 'wb') { |fp| fp.write(response.body) }
+    return [description, "#{date_setter}_#{voievodship}_#{shire}_#{town}.jpg"]
   end
 
   def date_setter
