@@ -31,7 +31,6 @@ class Location
     if response['status'] == 'ZERO_RESULTS'
       return nil
     end
-    puts response
     response['results'][0]['address_components'].each do |item|
       if item['types'].include?('administrative_area_level_1')
         data['voievodship'] = item['long_name']
@@ -107,6 +106,7 @@ class Meteo
     end 
     response = http_conn.get "http://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&fdate=#{date_setter}#{hour_num}&row=#{y}&col=#{x}&lang=pl"
     File.open("../cache/images/#{date_setter}_#{voievodship}_#{shire}_#{town}.jpg", 'wb') { |fp| fp.write(response.body) }
+    # if File.size("../cache/images/#{date_setter}_#{voievodship}_#{shire}_#{town}.jpg") > 1000
     return [description, "#{date_setter}_#{voievodship}_#{shire}_#{town}.jpg"]
   end
 

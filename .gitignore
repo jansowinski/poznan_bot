@@ -1,4 +1,5 @@
 memory/memory.json
 nohup.out
+cache/images/
 *.lock
 *.json

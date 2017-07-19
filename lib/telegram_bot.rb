@@ -54,7 +54,8 @@ loop do
             if forecast.class != Array
               bot.api.send_message(chat_id: message.chat.id, text: forecast)
             else
-              bot.api.send_photo(chat_id: message.chat.id, photo: forecast[1], caption: forecast[0])
+              bot.api.send_photo(chat_id: message.chat.id, photo: Faraday::UploadIO.new("../cache/images/#{forecast[1]}", 'image/jpeg'), caption: forecast[0])
+              File.delete("../cache/images/#{forecast[1]}")
             end
           end
         end
@@ -64,14 +65,8 @@ loop do
         when /\/pogoda/
           location = Location.new(52.469656, 16.953536)
           forecast = weather.get_image(location.voievodship, location.shire, location.town)
-          bot.api.send_photo(chat_id: message.chat.id, photo: forecast[1], caption: forecast[0])
-          # bot.api.send_message(chat_id: message.chat.id, text: "send location")
-          # bot.listen do |m|
-          #   if m.location != nil
-          #     bot.api.send_message(chat_id: message.chat.id, text: "#{m.location.latitude}, #{m.location.longitude}")
-          #     break
-          #   end
-          # end
+          bot.api.send_photo(chat_id: message.chat.id, photo: Faraday::UploadIO.new("../cache/images/#{forecast[1]}", 'image/jpeg'), caption: forecast[0])
+          File.delete("../cache/images/#{forecast[1]}")
         when /\/kino/
           date = 0
           args = message.text.split(' ') - ["/kino"]
