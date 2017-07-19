@@ -23,12 +23,15 @@ class Location
     @voievodship = nil 
     @shire = nil 
     @town = nil
-    uri = URI.parse("https://maps.googleapis.com/maps/api/geocode/json?latlng=#{lat},#{lng}")
+    config_json = JSON.parse(File.read('../config/config.json'))
+    key = config_json['google']['key']
+    uri = URI.parse("https://maps.googleapis.com/maps/api/geocode/json?key=#{key}&latlng=#{lat},#{lng}")
     response = JSON.parse(Net::HTTP.get_response(uri).body)
     data = {}
     if response['status'] == 'ZERO_RESULTS'
       return nil
     end
+    puts response
     response['results'][0]['address_components'].each do |item|
       if item['types'].include?('administrative_area_level_1')
         data['voievodship'] = item['long_name']
