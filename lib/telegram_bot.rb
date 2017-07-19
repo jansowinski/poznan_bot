@@ -28,8 +28,8 @@ emoji = Emoji.new
 cache = JSON.parse(File.read('../cache/users.json'))
 
 # Code
-# loop do
-#   begin
+loop do
+  begin
     Telegram::Bot::Client.run(token) do |bot|
       queue.subscribe do |delivery_info, metadata, payload|
         data = JSON.parse(payload)
@@ -129,8 +129,8 @@ cache = JSON.parse(File.read('../cache/users.json'))
         end
       end
     end
-#   rescue => error
-#     puts error.backtrace
-#   end
-# end
+  rescue => error
+    puts error.backtrace
+  end
+end
 bunny_connection.close
