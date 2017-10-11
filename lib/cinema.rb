@@ -134,16 +134,16 @@ class Movie
     temp_movie_hash = {}
     uri = URI.parse(@url)
     response = Net::HTTP.get_response(uri).body
-    parsed_response = Nokogiri::HTML(response)
-    movie_list = parsed_response.search("//ul[@class='city-films']/li")
+    movie_list = response.scan(/<li data-popularity(.+?)<\/li>/)
     movie_list.each do |item|
-      area_element = item.xpath("div[@class='area']")
-      link_element = area_element.search("a")
-      name = link_element.text
-      name[0] = ''
-      link = link_element.xpath("@href").text
+      item = item[0]
+      name = /<a class=\"name.*\"> (.+?)<\/a><div/.match(item)[1]
+      puts name
+      link = /<a class=\"name.*href=\"(.+?)\"/.match(item)[1]
+      puts link
+      filmweb_rating = /space-left\">(.+?)</.match(item)[1]
+      puts filmweb_rating
       link = "http://www.filmweb.pl#{link}"
-      filmweb_rating = area_element.search("div[@class='filmVote']//span[2]").text
       filmweb_rating = '⭐️' + (filmweb_rating.to_f * 10).to_i.to_s
       temp_movie_hash[name] = {
         "link" => link, 
@@ -153,9 +153,9 @@ class Movie
           "metacritic" => get_metacritic_score(name)
         }
       }
-      @movie_hash = temp_movie_hash
-      @movie_hash.keys
     end
+    @movie_hash = temp_movie_hash
+    @movie_hash.keys
   end
 
   def get_original_title (searched_item)
