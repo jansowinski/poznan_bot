@@ -110,7 +110,8 @@ class Movie
     string = ""
     @movie_hash.each do |key, value|
       next if key.length == 0
-      string += "_#{key}_ #{value['ratings']['filmweb']} #{value['ratings']['metacritic']} #{value['ratings']['rotten_tomatoes']}\n"
+      ratings = value['ratings']
+      string += "_#{key}_ #{ratings['filmweb']} #{ratings['metacritic']} #{ratings['rotten_tomatoes']}\n"
     end
     return string
   end
@@ -136,21 +137,19 @@ class Movie
     response = Net::HTTP.get_response(uri).body
     movie_list = response.scan(/<li data-popularity(.+?)<\/li>/)
     movie_list.each do |item|
-      item = item[0]
+      item = item[0].force_encoding(Encoding::UTF_8)
       name = /<a class=\"name.*\"> (.+?)<\/a><div/.match(item)[1]
-      puts name
       link = /<a class=\"name.*href=\"(.+?)\"/.match(item)[1]
-      puts link
       filmweb_rating = /space-left\">(.+?)</.match(item)[1]
-      puts filmweb_rating
       link = "http://www.filmweb.pl#{link}"
       filmweb_rating = '⭐️' + (filmweb_rating.to_f * 10).to_i.to_s
+      original_title = get_original_title(name)
       temp_movie_hash[name] = {
         "link" => link, 
         "ratings" => {
           "filmweb" => filmweb_rating,
-          "rotten_tomatoes" => get_rotten_tomatoes_score(name),
-          "metacritic" => get_metacritic_score(name)
+          "rotten_tomatoes" => get_rotten_tomatoes_score(original_title),
+          "metacritic" => get_metacritic_score(original_title)
         }
       }
     end
@@ -158,18 +157,14 @@ class Movie
     @movie_hash.keys
   end
 
-  def get_original_title (searched_item)
+  def get_original_title(searched_item)
     uri = URI.parse("http://www.filmweb.pl/search/live?q=#{URI.escape(searched_item)}")
-    http = Net::HTTP.new(uri.host,uri.port)
-    request = Net::HTTP::Get.new(uri.request_uri)
-    response = http.request(request)
-    return response.body.gsub('\c', "\n").split("\n")[3]
+    response = Net::HTTP.get_response(uri).body
+    return response.split('\c')[3]
   end
 
 
   def get_metacritic_score(searched_item)
-
-    searched_item = get_original_title(searched_item)
     uri = URI.parse("http://www.metacritic.com/autosearch")
     http = Net::HTTP.new(uri.host,uri.port)
     request = Net::HTTP::Post.new(uri.path, initheader = {
@@ -194,8 +189,6 @@ class Movie
   end
 
   def get_rotten_tomatoes_score(searched_item)
-
-    searched_item = get_original_title(searched_item)
     uri = URI.parse("https://www.rottentomatoes.com/api/private/v2.0/search/?limit=5&q=#{URI.escape(searched_item)}")
     https = Net::HTTP.new(uri.host,uri.port)
     https.use_ssl = true
