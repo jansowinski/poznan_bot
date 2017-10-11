@@ -3,26 +3,29 @@ require 'json'
 require './meteo'
 require './cinema'
 
-
+puts "Loading Config..."
 # Telegram config
 config_json = JSON.parse(File.read('../config/config.json'))
 token = config_json['telegram']['token']
 
+puts "Initializing objects..."
 # Objects
 weather = Meteo.new
 cinema = Cinema.new
 movie = Movie.new
 emoji = Emoji.new
 
+puts "Loading cache..."
 # Cache
-
 cache = JSON.parse(File.read('../cache/users.json'))
 
+puts "starting main loop!"
 # Code
+
+
 loop do
   begin
     Telegram::Bot::Client.run(token) do |bot|
-
       bot.listen do |message|
         if !cache.include?(message.chat.id)
           cache["#{message.chat.id}"] = {
@@ -141,4 +144,3 @@ loop do
     puts error.backtrace
   end
 end
-bunny_connection.close
