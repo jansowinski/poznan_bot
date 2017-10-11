@@ -97,7 +97,7 @@ class Cinema
 end
 
 class Movie
-  attr_reader :movies
+  attr_reader :movies, :get_movies_list
 
   def initialize
     @url = "http://www.filmweb.pl/showtimes/Pozna%C5%84"
@@ -107,7 +107,6 @@ class Movie
 
 
   def movies
-    get_movies_list
     string = ""
     @movie_hash.each do |key, value|
       next if key.length == 0
@@ -132,26 +131,29 @@ class Movie
   end
 
   def get_movies_list
-    @movie_hash = {}
+    temp_movie_hash = {}
     uri = URI.parse(@url)
     response = Net::HTTP.get_response(uri).body
     parsed_response = Nokogiri::HTML(response)
-    movie_list = parsed_response.xpath("//ul[@class='city-films']/li")
+    movie_list = parsed_response.search("//ul[@class='city-films']/li")
     movie_list.each do |item|
-      name = item.xpath("div[@class='area']").css('.name').text
+      area_element = item.xpath("div[@class='area']")
+      link_element = area_element.search("a")
+      name = link_element.text
       name[0] = ''
-      link = item.xpath("div[@class='area']").css('.name').xpath("@href").text
+      link = link_element.xpath("@href").text
       link = "http://www.filmweb.pl#{link}"
-      filmweb_rating = item.xpath("div[@class='area']").css('.filmVote').xpath("span[2]").text
-      new_filmweb_rating = '⭐️' + (filmweb_rating.to_f * 10).to_i.to_s
-      @movie_hash[name] = {
+      filmweb_rating = area_element.search("div[@class='filmVote']//span[2]").text
+      filmweb_rating = '⭐️' + (filmweb_rating.to_f * 10).to_i.to_s
+      temp_movie_hash[name] = {
         "link" => link, 
         "ratings" => {
-          "filmweb" => new_filmweb_rating,
+          "filmweb" => filmweb_rating,
           "rotten_tomatoes" => get_rotten_tomatoes_score(name),
           "metacritic" => get_metacritic_score(name)
         }
       }
+      @movie_hash = temp_movie_hash
       @movie_hash.keys
     end
   end
@@ -214,7 +216,6 @@ class Movie
 
   def search (phrase)
     phrase.downcase!
-    get_movies_list
     @movie_hash.each do |key, value|
       return hours(@movie_hash[key], key) if key.downcase.include?(phrase)
     end
@@ -241,6 +242,6 @@ class Movie
     return [data, title]
   end
 
-  private :get_movies_list, :search, :hours
+  private :search, :hours
 
 end
