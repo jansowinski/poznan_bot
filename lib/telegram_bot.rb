@@ -1,17 +1,8 @@
-require "bunny"
 require 'telegram/bot'
 require 'json'
 require './meteo'
 require './cinema'
 
-# RabbitMQ config
-bunny_connection = Bunny.new
-bunny_connection.start
-
-channel = bunny_connection.create_channel
-queue  = channel.queue("facebook_posts", :auto_delete => true)
-subscribe  = channel.queue("subscription_queue", :auto_delete => true)
-exchange  = channel.default_exchange
 
 # Telegram config
 config_json = JSON.parse(File.read('../config/config.json'))
@@ -31,10 +22,7 @@ cache = JSON.parse(File.read('../cache/users.json'))
 loop do
   begin
     Telegram::Bot::Client.run(token) do |bot|
-      queue.subscribe do |delivery_info, metadata, payload|
-        data = JSON.parse(payload)
-        bot.api.send_message(chat_id: data['chat_id'], text: data['message'])
-      end
+
       bot.listen do |message|
         if !cache.include?(message.chat.id)
           cache["#{message.chat.id}"] = {
