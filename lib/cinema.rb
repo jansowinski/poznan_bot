@@ -97,7 +97,7 @@ class Cinema
 end
 
 class Movie
-  attr_reader :movies, :get_movies_list
+  attr_reader :movies, :update
 
   def initialize
     @url = "http://www.filmweb.pl/showtimes/Pozna%C5%84"
@@ -114,6 +114,10 @@ class Movie
       string += "_#{key}_ #{ratings['filmweb']} #{ratings['metacritic']} #{ratings['rotten_tomatoes']}\n"
     end
     return string
+  end
+
+  def update
+    get_movies_list
   end
 
   def seanses (argument)
@@ -192,7 +196,6 @@ class Movie
     uri = URI.parse("https://www.rottentomatoes.com/api/private/v2.0/search/?limit=5&q=#{URI.escape(searched_item)}")
     https = Net::HTTP.new(uri.host,uri.port)
     https.use_ssl = true
-    https.use_ssl = true
     request = Net::HTTP::Get.new(uri.request_uri)
     response = https.request(request)
     
@@ -235,6 +238,6 @@ class Movie
     return [data, title]
   end
 
-  private :search, :hours
+  private :search, :hours, :get_movies_list
 
 end
