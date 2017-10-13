@@ -25,9 +25,7 @@ class Location
     @voievodship = nil 
     @shire = nil 
     @town = nil
-    config_json = JSON.parse(File.read('../config/config.json'))
-    key = config_json['google']['key']
-    uri = URI.parse("https://maps.googleapis.com/maps/api/geocode/json?key=#{key}&latlng=#{lat},#{lng}")
+    uri = URI.parse("https://maps.googleapis.com/maps/api/geocode/json?latlng=#{lat},#{lng}")
     response = JSON.parse(Net::HTTP.get_response(uri).body)
     data = {}
     if response['status'] == 'ZERO_RESULTS'
@@ -123,13 +121,7 @@ class Meteo
     response = Net::HTTP.get_response(uri).body
     x = response[/var act_x = (.*);var/,1]
     y = response[/var act_y = (.*);/,1]
-    http_conn = Faraday.new do |builder|
-      builder.adapter Faraday.default_adapter
-    end 
-    response = http_conn.get "http://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&fdate=#{date_setter}#{hour_num}&row=#{y}&col=#{x}&lang=pl"
-    File.open("../cache/images/#{date_setter}_#{voievodship}_#{shire}_#{town}.jpg", 'wb') { |fp| fp.write(response.body) }
-    # if File.size("../cache/images/#{date_setter}_#{voievodship}_#{shire}_#{town}.jpg") > 1000
-    return [description, "#{date_setter}_#{voievodship}_#{shire}_#{town}.jpg"]
+    return [description, "http://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&fdate=#{date_setter}#{hour_num}&row=#{y}&col=#{x}&lang=pl"]
   end
 
   def date_setter
