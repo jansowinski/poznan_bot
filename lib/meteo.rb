@@ -100,7 +100,7 @@ class Meteo
       if @data[voievodship] != nil and @data[voievodship][shire] != nil and @data[voievodship][shire][town]
         id = @data[voievodship][shire][town] 
         description = "#{voievodship.capitalize} - pow. #{shire}, #{town}"
-      elsif @data[voievodship][shire] != nil
+      elsif @data[voievodship] != nil and @data[voievodship][shire] != nil
         difference_hash = {}
         @data[voievodship][shire].each do |key, value|
           uri = URI.parse(URI.encode("https://maps.googleapis.com/maps/api/geocode/json?address=Poland,#{voievodship},#{shire},#{key}"))

@@ -2,8 +2,13 @@ require 'time'
 require 'net/http'
 require 'uri'
 require 'nokogiri'
+require 'addressable/uri'
+require 'open-uri'
+require 'json'
+
 class Cinema
   attr_reader :theatres
+
   def initialize
     @urls = {"apolloUrl" => ["Apollo-70", "Kino Apollo"],
             "bulgarska19Url" => ["Bu%C5%82garska+19-1618", "Kino Bułgarska 19"],
@@ -23,6 +28,8 @@ class Cinema
     end
     @theatres.map(&:downcase)
   end
+
+
   def seanses(cinema_name="wszystkie", day=0)
     if day.to_i > 7 or day.to_i < 0
       day = 0
@@ -34,6 +41,7 @@ class Cinema
       return returner(assigner(cinema_url[0], day.to_s), cinema_url[1])
     end
   end
+
   def set_cinema(cinema)
     hash = {
         "apollo" => @urls["apolloUrl"],
@@ -52,11 +60,13 @@ class Cinema
     }
     return hash[cinema.to_s]
   end
+
   def assigner (url_link, day)
     uri = URI.parse("http://www.filmweb.pl/showtimes/Pozna%C5%84/#{url_link}?day=#{day.to_s}")
     response = Net::HTTP.get_response(uri).body
     return Nokogiri::HTML(response)
   end
+
   def returner(assigned, cinema_name)
 
     cinema_div = assigned.xpath("//ul[@class='cinema-films']/li")
@@ -75,6 +85,7 @@ class Cinema
     end
     return array
   end
+
   def everything(u, day)
     array = []
     u.each do |key, item|
@@ -86,20 +97,34 @@ class Cinema
 end
 
 class Movie
-  attr_reader :movies
+  attr_reader :movies, :update
+
   def initialize
     @url = "http://www.filmweb.pl/showtimes/Pozna%C5%84"
     @movie_hash = {}
     get_movies_list
   end
+
+
   def movies
-    get_movies_list
-    return "_#{@movie_hash.keys[0..-2].join("_\n_")}_"
+    string = ""
+    @movie_hash.each do |key, value|
+      next if key.length == 0
+      ratings = value['ratings']
+      string += "#{ratings['filmweb']} #{ratings['metacritic']} #{ratings['rotten_tomatoes']} / _#{key}_\n"
+    end
+    return string
   end
+
+  def update
+    get_movies_list
+  end
+
   def seanses (argument)
     data = search(argument)
     return "" if data == nil
-    message = "*#{data[1].upcase}*"
+    ratings = @movie_hash[data[1]]['ratings']
+    message = "#{ratings['filmweb'] + ratings['metacritic'] + ratings['rotten_tomatoes']} / *#{data[1].upcase}*"
     data[0].each do |cinema, variants|
       message += "\n*#{cinema.gsub(' (Poznań)','')}*\n"
       variants.each do |variant, hours|
@@ -109,28 +134,92 @@ class Movie
     end
     return message
   end
+
   def get_movies_list
+    temp_movie_hash = {}
     uri = URI.parse(@url)
     response = Net::HTTP.get_response(uri).body
-    parsed_response = Nokogiri::HTML(response)
-    movie_list = parsed_response.xpath("//ul[@class='city-films']/li")
+    movie_list = response.scan(/<li data-popularity(.+?)<\/li>/)
     movie_list.each do |item|
-      name = item.xpath("div[@class='area']").css('.name').text
-      link = item.xpath("div[@class='area']").css('.name').xpath("@href").text
-      @movie_hash[name] = "http://www.filmweb.pl#{link}"
-      @movie_hash.keys
+      item = item[0].force_encoding(Encoding::UTF_8)
+      name = /<a class=\"name.*\"> (.+?)<\/a><div/.match(item)[1]
+      link = /<a class=\"name.*href=\"(.+?)\"/.match(item)[1]
+      filmweb_rating = /space-left\">(.+?)</.match(item)[1]
+      link = "http://www.filmweb.pl#{link}"
+      filmweb_rating = '⭐️' + (filmweb_rating.gsub(',', '.').to_f * 10).to_i.to_s
+      original_title = get_original_title(name)
+      temp_movie_hash[name] = {
+        "link" => link, 
+        "ratings" => {
+          "filmweb" => filmweb_rating,
+          "rotten_tomatoes" => get_rotten_tomatoes_score(original_title),
+          "metacritic" => get_metacritic_score(original_title)
+        }
+      }
     end
+    @movie_hash = temp_movie_hash
+    @movie_hash.keys
   end
+
+  def get_original_title(searched_item)
+    uri = URI.parse("http://www.filmweb.pl/search/live?q=#{URI.escape(searched_item)}")
+    response = Net::HTTP.get_response(uri).body
+    return response.split('\c')[3]
+  end
+
+
+  def get_metacritic_score(searched_item)
+    uri = URI.parse("http://www.metacritic.com/autosearch")
+    http = Net::HTTP.new(uri.host,uri.port)
+    request = Net::HTTP::Post.new(uri.path, initheader = {
+      "Referer" => "http://www.metacritic.com/autosearch",
+      "Content-Type" => "application/x-www-form-urlencoded; charset=UTF-8",
+      "Host" => "www.metacritic.com",
+      "User-Agent" => "MetacriticUserscript Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0",
+      "X-Requested-With" => "XMLHttpRequest"
+    })
+    request.body = "search_term=#{URI.escape(searched_item)}&image_size=98&search_each=1&sort_type=popular"
+    response = http.request(request)
+
+    result = JSON.parse(response.body)
+
+    result['autoComplete']['results'].each do |item|
+      if item['metaScore'] != nil
+        return "\u24C2 #{item['metaScore']}"
+        break
+      end
+    end
+    return ""
+  end
+
+  def get_rotten_tomatoes_score(searched_item)
+    uri = URI.parse("https://www.rottentomatoes.com/api/private/v2.0/search/?limit=5&q=#{URI.escape(searched_item)}")
+    https = Net::HTTP.new(uri.host,uri.port)
+    https.use_ssl = true
+    request = Net::HTTP::Get.new(uri.request_uri)
+    response = https.request(request)
+    
+    result = JSON.parse(response.body)
+
+    result['movies'].each do |item|
+      if item['meterScore'] != nil
+        return "🍅 #{item['meterScore']}"
+        break
+      end
+    end
+    return ""
+  end
+
   def search (phrase)
     phrase.downcase!
-    get_movies_list
     @movie_hash.each do |key, value|
       return hours(@movie_hash[key], key) if key.downcase.include?(phrase)
     end
     return nil
   end
-  def hours (url, title)
-    uri = URI.parse(url)
+
+  def hours (movie, title)
+    uri = URI.parse(movie['link'])
     response = Net::HTTP.get_response(uri).body
     parsed_response = Nokogiri::HTML(response)
     cinemas = parsed_response.css('ul.film-cinemas').css('ul.film-cinemas').xpath("li")
@@ -148,5 +237,7 @@ class Movie
     end
     return [data, title]
   end
-  private :get_movies_list, :search, :hours
+
+  private :search, :hours, :get_movies_list
+
 end
