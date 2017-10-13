@@ -111,7 +111,7 @@ class Movie
     @movie_hash.each do |key, value|
       next if key.length == 0
       ratings = value['ratings']
-      string += "_#{key}_ #{ratings['filmweb']} #{ratings['metacritic']} #{ratings['rotten_tomatoes']}\n"
+      string += "#{ratings['filmweb']} #{ratings['metacritic']} #{ratings['rotten_tomatoes']} / _#{key}_\n"
     end
     return string
   end
@@ -124,7 +124,7 @@ class Movie
     data = search(argument)
     return "" if data == nil
     ratings = @movie_hash[data[1]]['ratings']
-    message = "*#{data[1].upcase}* #{ratings['filmweb'] + ratings['metacritic'] + ratings['rotten_tomatoes']}"
+    message = "#{ratings['filmweb'] + ratings['metacritic'] + ratings['rotten_tomatoes']} / *#{data[1].upcase}*"
     data[0].each do |cinema, variants|
       message += "\n*#{cinema.gsub(' (Poznań)','')}*\n"
       variants.each do |variant, hours|
@@ -146,7 +146,7 @@ class Movie
       link = /<a class=\"name.*href=\"(.+?)\"/.match(item)[1]
       filmweb_rating = /space-left\">(.+?)</.match(item)[1]
       link = "http://www.filmweb.pl#{link}"
-      filmweb_rating = '⭐️' + (filmweb_rating.to_f * 10).to_i.to_s
+      filmweb_rating = '⭐️' + (filmweb_rating.gsub(',', '.').to_f * 10).to_i.to_s
       original_title = get_original_title(name)
       temp_movie_hash[name] = {
         "link" => link, 
