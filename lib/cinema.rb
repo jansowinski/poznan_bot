@@ -180,7 +180,6 @@ class Movie
     })
     request.body = "search_term=#{URI.escape(searched_item)}&image_size=98&search_each=1&sort_type=popular"
     response = http.request(request)
-
     result = JSON.parse(response.body)
 
     result['autoComplete']['results'].each do |item|

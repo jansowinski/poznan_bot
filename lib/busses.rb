@@ -4,7 +4,7 @@ require 'json'
 require 'open-uri'
 
 
-class Timetable
+class TimeTable
 
   attr_reader :from_coordinates, :update
 
@@ -23,7 +23,7 @@ class Timetable
   def print_timetable(bus_stop)
     array_to_ptint = ["Przystanek #{@bus_stops[bus_stop]['name']}\n"]
     get_timatable(bus_stop).each do |bus|
-      array_to_ptint << "#{bus['line']} - #{bus['minutes']} min. bus (#{bus['direction']})"
+      array_to_ptint << "#{bus['line']} - #{bus['minutes']} min. bus (→ #{bus['direction']})"
     end
 
     return array_to_ptint.join("\n")
@@ -87,7 +87,3 @@ class Timetable
   
   private :print_timetable, :get_timatable, :get_bus_stops, :find_closest_stop
 end
-
-
-table = Timetable.new
-puts table.from_coordinates(52.469746, 16.953402)
