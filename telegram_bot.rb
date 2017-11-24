@@ -1,8 +1,8 @@
 require 'telegram/bot'
 require 'json'
-require './meteo'
-require './cinema'
-require './busses'
+require './lib/meteo'
+require './lib/cinema'
+require './lib/busses'
 require 'time'
 require 'thread'
 
@@ -10,9 +10,8 @@ timestamp_start = Time.now
 
 puts "Loading Config..."
 # Telegram config
-config_json = JSON.parse(File.read('../config/config.json'))
+config_json = JSON.parse(File.read('./config/config.json'))
 token = config_json['telegram']['token']
-
 puts "Initializing objects..."
 # Objects
 weather = Meteo.new
@@ -21,10 +20,9 @@ movie = Movie.new
 emoji = Emoji.new
 time_table = TimeTable.new
 
-
 puts "Loading cache..."
 # Cache
-cache = JSON.parse(File.read('../cache/users.json'))
+cache = JSON.parse(File.read('./cache/users.json'))
 
 # Code
 puts "starting threads"
@@ -59,7 +57,7 @@ threads << Thread.new do
               "first_name"=>"#{message.from.first_name}",
               "last_name"=>"#{message.from.last_name}",
               "username"=>"#{message.from.username}"}
-            File.open('../cache/users.json', 'w+') do |file| 
+            File.open('./cache/users.json', 'w+') do |file| 
               file.write(JSON.dump(cache))
             end
           end
@@ -223,6 +221,12 @@ threads << Thread.new do
     end
   # end
 end
+
+# def handle_location
+  
+# end
+
+
 timestamp_stop = Time.now
 puts "Startup time: #{timestamp_stop - timestamp_start} s."
 threads.each{|thread| thread.join}
