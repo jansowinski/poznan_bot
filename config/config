@@ -8,5 +8,9 @@
     "app_access_token": "",
     "app_secret": "",
     "access_token": "",
+    "server": {
+      "ip": "",
+      "port": "",
+    }
   }
 }
