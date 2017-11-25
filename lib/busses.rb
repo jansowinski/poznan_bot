@@ -13,7 +13,11 @@ class TimeTable
   end
 
   def from_coordinates(lng, lat)
-    return print_timetable(find_closest_stop(lng, lat))
+    message = []
+    find_closest_stops(lng, lat, 4).each do |stop|
+      message << print_timetable(stop)
+    end
+    return message.join("\n\n")
   end
 
   def update
@@ -75,15 +79,16 @@ class TimeTable
     return stops_object
   end
 
-  def find_closest_stop(lng, lat)
+  def find_closest_stops(lng, lat, number_of_stops)
     differences_object = {}
     @bus_stops.each do |key, stop|
       lat_difference = lat - stop['coordinates']['lat']
       lng_difference = lng - stop['coordinates']['lng']
       differences_object[key] = Math.sqrt((lat_difference*lat_difference)+(lng_difference*lng_difference))
     end
-    return differences_object.min_by{|key,value| value}[0]
+    stops_by_distance = differences_object.sort_by{|key,value| value}
+    return stops_by_distance[0..(number_of_stops - 1)].map{|array| array[0]}
   end
   
-  private :print_timetable, :get_timatable, :get_bus_stops, :find_closest_stop
+  private :print_timetable, :get_timatable, :get_bus_stops, :find_closest_stops
 end
