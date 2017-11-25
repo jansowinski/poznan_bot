@@ -28,7 +28,7 @@ class Location
     uri = URI.parse("https://maps.googleapis.com/maps/api/geocode/json?latlng=#{lat},#{lng}")
     response = JSON.parse(Net::HTTP.get_response(uri).body)
     data = {}
-    if response['status'] == 'ZERO_RESULTS'
+    if response['status'] == 'ZERO_RESULTS' or response['results'].length == 0
       return nil
     end
     response['results'][0]['address_components'].each do |item|

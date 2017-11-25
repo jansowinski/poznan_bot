@@ -12,6 +12,20 @@ to make use of it:
 - install [RabbitMQ](rabbitmq.com)
 - ```sh start.sh```
 
+Facebook:
+
+run:
+
+```
+export ACCESS_TOKEN='blahblahblab'
+export APP_SECRET='blahblahblab'
+export VERIFY_TOKEN='12345|blahblahblab'
+```
+
+and then 
+
+```rackup -p 5050```
+
 ## Ideas for new functions
   
   - [ ] make filmweb parser city - agnostic
