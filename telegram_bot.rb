@@ -193,8 +193,6 @@ $time_table = TimeTable.new
 $last_update_time = Time.now
 puts "Loading cache..."
 $cache = JSON.parse(File.read('./cache/users.json'))
-puts "updating movies"
-$movie.update
 puts "starting main loop!"
 timestamp_stop = Time.now
 puts "Startup time: #{timestamp_stop - timestamp_start} s."
