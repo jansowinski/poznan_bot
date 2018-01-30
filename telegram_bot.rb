@@ -161,6 +161,7 @@ end
 def check_for_updates
   now = Time.now
   if now.day > $last_update_time.day or now.month > $last_update_time.month
+    $last_update_time = now
     movie.update
   end
 end
@@ -206,31 +207,38 @@ puts "Startup time: #{timestamp_stop - timestamp_start} s."
 
 Telegram::Bot::Client.run(token) do |bot|
   check_for_updates
-  bot.listen do |message|
-    if message.class != Telegram::Bot::Types::CallbackQuery and !$cache.include?(message.chat.id)
-      log_users(message)
-    end
-    case message
-    when Telegram::Bot::Types::CallbackQuery
-      handle_callback(bot, message)
-    when Telegram::Bot::Types::Message
-      if message.location != nil
-        handle_location(bot, message)
+  begin
+    bot.listen do |message|
+      if message.class != Telegram::Bot::Types::CallbackQuery and !$cache.include?(message.chat.id)
+        log_users(message)
       end
-      case message.text
-      when '/start', '/help'
-        bot.api.send_message(chat_id: message.chat.id, text: "*POGODA:*\nwyślij swoją lokalizację a otrzymasz obecną prognozę z meteo\n/pogoda w Poznaniu\n\n*REPERTUARY:*\n/kino - repertuar na dziś\n/kino jutro - repertuar na jutro\n/kino pojutrze - repertuar na pojutrze\n/film <nazwa filmu> - bot postara się znaleźć repertuar twojego filmu. Fragment tytułu wystarczy\n/filmy - lista filmów granych dzisiaj w Poznaniu\n\n*POWIADOMIENIA Z FANPAGE*\n/subscribe <nazwa / link fanpage> - np. /subscribe Reuters albo /subscribe https://m.facebook.com/Reuters/\n/unsubscribe <nazwa / link fanpage> - analogicznie do /subscribe\n/unsubscribe - odsubskrybuj wszystkie fanpage", parse_mode: 'Markdown')
-      when /google(.*?)maps/, /maps(.*?)google/
-        handle_google_maps_link(bot, message)
-      when /\/pogoda/
-        handle_weather(bot, message)
-      when /\/kino/
-        handle_cinema(bot, message)
-      when '/filmy'
-        handle_movies(bot, message)
-      when /\/film/
-        handle_movie(bot, message)
+      case message
+      when Telegram::Bot::Types::CallbackQuery
+        handle_callback(bot, message)
+      when Telegram::Bot::Types::Message
+        if message.location != nil
+          handle_location(bot, message)
+        end
+        case message.text
+        when '/start', '/help'
+          bot.api.send_message(chat_id: message.chat.id, text: "*POGODA:*\nwyślij swoją lokalizację a otrzymasz obecną prognozę z meteo\n/pogoda w Poznaniu\n\n*REPERTUARY:*\n/kino - repertuar na dziś\n/kino jutro - repertuar na jutro\n/kino pojutrze - repertuar na pojutrze\n/film <nazwa filmu> - bot postara się znaleźć repertuar twojego filmu. Fragment tytułu wystarczy\n/filmy - lista filmów granych dzisiaj w Poznaniu\n\n*POWIADOMIENIA Z FANPAGE*\n/subscribe <nazwa / link fanpage> - np. /subscribe Reuters albo /subscribe https://m.facebook.com/Reuters/\n/unsubscribe <nazwa / link fanpage> - analogicznie do /subscribe\n/unsubscribe - odsubskrybuj wszystkie fanpage", parse_mode: 'Markdown')
+        when /google(.*?)maps/, /maps(.*?)google/
+          handle_google_maps_link(bot, message)
+        when /\/pogoda/
+          handle_weather(bot, message)
+        when /\/kino/
+          handle_cinema(bot, message)
+        when '/filmy'
+          handle_movies(bot, message)
+        when /\/film/
+          handle_movie(bot, message)
+        end
       end
     end
+  rescue Telegram::Bot::Exceptions::ResponseError => e
+    if e.error_code.to_s == "502"
+      puts "Telegram 502 error"
+    end
+    retry
   end
 end
