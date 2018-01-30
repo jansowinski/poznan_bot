@@ -74,7 +74,7 @@ class Cinema
     array << "#{cinema_name}\n"
     cinema_div.each do |child|
       time_array = []
-      title = child.xpath("div[@class='filmBox']/div/div[@class='filmPreview__card']/div/div/a/span[@class='filmPreview__title']").text
+      title = child.xpath("div[@class='filmBox']/div/div[@class='filmPreview__card']/div/div/a/h3[@class='filmPreview__title']").text
       child.css(".seances-table").xpath("div/div/ul/li/span").each do |item|
         time_array << item.text
       end
