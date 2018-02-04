@@ -96,22 +96,19 @@ class Cinema
   end
 end
 
-class Movie
+class Movies
   attr_reader :movies, :update
 
   def initialize
     @url = "http://www.filmweb.pl/showtimes/Pozna%C5%84"
-    @movie_hash = {}
     get_movies_list
   end
 
 
   def movies
     string = ""
-    @movie_hash.each do |key, value|
-      next if key.length == 0
-      ratings = value['ratings']
-      string += "#{ratings['filmweb']} #{ratings['metacritic']} #{ratings['rotten_tomatoes']} / _#{key}_\n"
+    @movies.each do |movie|
+      string += "#{movie.filmweb_score} #{movie.metacritic_score} #{movie.rotten_tomatoes_score} / _#{movie.title}_\n"
     end
     return string
   end
@@ -121,11 +118,10 @@ class Movie
   end
 
   def seanses (argument)
-    data = search(argument)
-    return "" if data == nil
-    ratings = @movie_hash[data[1]]['ratings']
-    message = "#{ratings['filmweb'] + ratings['metacritic'] + ratings['rotten_tomatoes']} / *#{data[1].upcase}*"
-    data[0].each do |cinema, variants|
+    movie = search(argument)
+    return "" if movie == nil
+    message = "#{movie.filmweb_score} #{movie.metacritic_score} #{movie.rotten_tomatoes_score} / *#{movie.title.upcase}*"
+    movie.hours.each do |cinema, variants|
       message += "\n*#{cinema.gsub(' (Poznań)','')}*\n"
       variants.each do |variant, hours|
         dots = variant != "" ? ': ' : '' 
@@ -136,39 +132,49 @@ class Movie
   end
 
   def get_movies_list
-    temp_movie_hash = {}
+    @movies = []
     uri = URI.parse(@url)
     response = Net::HTTP.get_response(uri).body
     movie_list = response.scan(/<li data-popularity(.+?)<\/li>/)
     movie_list.each do |item|
       item = item[0].force_encoding(Encoding::UTF_8)
       name = /<a class=\"name.*\"> (.+?)<\/a><div/.match(item)[1]
-      link = /<a class=\"name.*href=\"(.+?)\"/.match(item)[1]
-      filmweb_rating = /space-left\">(.+?)</.match(item)[1]
-      link = "http://www.filmweb.pl#{link}"
-      filmweb_rating = '⭐️' + (filmweb_rating.gsub(',', '.').to_f * 10).to_i.to_s
-      original_title = get_original_title(name)
-      temp_movie_hash[name] = {
-        "link" => link, 
-        "ratings" => {
-          "filmweb" => filmweb_rating,
-          "rotten_tomatoes" => get_rotten_tomatoes_score(original_title),
-          "metacritic" => get_metacritic_score(original_title)
-        }
-      }
+      filmweb_link = /<a class=\"name.*href=\"(.+?)\"/.match(item)[1]
+      @movies << Movie.new(name, filmweb_link)
     end
-    @movie_hash = temp_movie_hash
-    @movie_hash.keys
+
   end
 
-  def get_original_title(searched_item)
-    uri = URI.parse("http://www.filmweb.pl/search/live?q=#{URI.escape(searched_item)}")
-    response = Net::HTTP.get_response(uri).body
-    return response.split('\c')[3]
+  def search (phrase)
+    phrase.downcase!
+    @movies.each do |movie|
+      return movie if movie.title.downcase.include?(phrase)
+    end
+    return nil
   end
 
+  private :search, :get_movies_list
+end
 
-  def get_metacritic_score(searched_item)
+class Movie
+  attr_reader :filmweb_score, :metacritic_score, :rotten_tomatoes_score, :filmweb_link, :hours, :title, :original_title
+  def initialize(title, filmweb_link)
+    @title = title
+    @filmweb_link = "http://www.filmweb.pl#{filmweb_link}"
+    parse_filmweb_data
+    set_year
+    set_metacritic_score
+    set_rotten_tomatoes_score
+  end
+  def update_hours
+    parse_filmweb_data
+  end
+  def set_year
+    year = /-\d\d\d\d-/.match(@filmweb_link).to_s.gsub!('-', '')
+    @year = year
+  end
+  def set_metacritic_score
+    name_to_search = "#{@original_title}"
     uri = URI.parse("http://www.metacritic.com/autosearch")
     http = Net::HTTP.new(uri.host,uri.port)
     request = Net::HTTP::Post.new(uri.path, initheader = {
@@ -178,51 +184,50 @@ class Movie
       "User-Agent" => "MetacriticUserscript Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0",
       "X-Requested-With" => "XMLHttpRequest"
     })
-    request.body = "search_term=#{URI.escape(searched_item)}&image_size=98&search_each=1&sort_type=popular"
+    request.body = "search_term=#{URI.escape(name_to_search)}&image_size=98&search_each=1&sort_type=popular"
     response = http.request(request)
     result = JSON.parse(response.body)
-
+    min_time_difference = 100
     result['autoComplete']['results'].each do |item|
-      if item['metaScore'] != nil
-        return "\u24C2 #{item['metaScore']}"
-        break
+      if item['metaScore'] != nil and item['refType'] == "Movie" 
+        time_difference = (item['itemDate'].to_i - @year.to_i).abs
+        if time_difference < min_time_difference
+          min_time_difference = time_difference
+          @metacritic_score = "\u24C2 #{item['metaScore']}"
+        end
       end
     end
-    return ""
   end
-
-  def get_rotten_tomatoes_score(searched_item)
-    uri = URI.parse("https://www.rottentomatoes.com/api/private/v2.0/search/?limit=5&q=#{URI.escape(searched_item)}")
+  def set_rotten_tomatoes_score
+    uri = URI.parse("https://www.rottentomatoes.com/api/private/v2.0/search/?limit=5&q=#{URI.escape(@original_title)}")
     https = Net::HTTP.new(uri.host,uri.port)
     https.use_ssl = true
     request = Net::HTTP::Get.new(uri.request_uri)
     response = https.request(request)
-    
     result = JSON.parse(response.body)
-
+    min_time_difference = 100
     result['movies'].each do |item|
       if item['meterScore'] != nil
-        return "🍅 #{item['meterScore']}"
-        break
+        time_difference = (item['year'] - @year.to_i).abs
+        if time_difference < min_time_difference
+          min_time_difference = time_difference
+          @rotten_tomatoes_score = "🍅 #{item['meterScore']}"
+        end
       end
     end
-    return ""
   end
-
-  def search (phrase)
-    phrase.downcase!
-    @movie_hash.each do |key, value|
-      return hours(@movie_hash[key], key) if key.downcase.include?(phrase)
-    end
-    return nil
-  end
-
-  def hours (movie, title)
-    uri = URI.parse(movie['link'])
+  def parse_filmweb_data
+    uri = URI.parse(@filmweb_link)
     response = Net::HTTP.get_response(uri).body
     parsed_response = Nokogiri::HTML(response)
+
+    filmweb_score = parsed_response.css('span.rateBox__rate').text
+    @filmweb_score = "⭐ #{filmweb_score}" if filmweb_score.length != 0
+    @original_title = parsed_response.css('div.filmPreview__originalTitle').text
+    @original_title = @title if @original_title.length == 0
+    
     cinemas = parsed_response.css('ul.film-cinemas').css('ul.film-cinemas').xpath("li")
-    data = {}
+    @hours = {}
     cinemas.each do |cinema|
       name = cinema.xpath("h3").text
       variants = {}
@@ -232,11 +237,8 @@ class Movie
           variants[variant.xpath("div").text] << item.text
         end
       end
-      data[name] = variants
+      @hours[name] = variants
     end
-    return [data, title]
   end
-
-  private :search, :hours, :get_movies_list
-
+  private :set_year, :set_metacritic_score, :set_rotten_tomatoes_score, :parse_filmweb_data
 end

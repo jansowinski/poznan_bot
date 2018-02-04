@@ -106,7 +106,7 @@ def handle_weather(bot, message)
 end
 
 def handle_movies(bot, message)
-  all_movies = $movie.movies
+  all_movies = $movies.movies
   bot.api.send_message(
     chat_id: message.chat.id, 
     text: all_movies, 
@@ -117,7 +117,7 @@ def handle_movie(bot, message)
   searched_movie = message.text.split(" ") - ["/film"]
   searched_movie = searched_movie.join(" ")
   if searched_movie.gsub(" ","").length > 0
-    found = $movie.seanses(searched_movie)
+    found = $movies.seanses(searched_movie)
     if found.length > 0
       bot.api.send_message(
         chat_id: message.chat.id, 
@@ -188,7 +188,7 @@ token = JSON.parse(File.read('./config/config.json'))['telegram']['token']
 puts "Initializing objects..."
 $weather = Meteo.new
 $cinema = Cinema.new
-$movie = Movie.new
+$movies = Movies.new
 $emoji = Emoji.new
 $time_table = TimeTable.new
 $last_update_time = Time.now
