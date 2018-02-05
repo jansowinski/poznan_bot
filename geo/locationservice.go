@@ -3,15 +3,18 @@ package main
 import (
 	"./geohelper"
 	"encoding/json"
-	"fmt"
 	"github.com/go-redis/redis"
-	// "log"
 )
 
 type Message struct {
 	Id  string
 	Lat float64
 	Lng float64
+}
+
+type MessageOut struct {
+	Powiat string
+	Wojewodztwo string
 }
 
 func main() {
@@ -28,8 +31,11 @@ func main() {
 		val, err = client.RPop("locations").Result()
 		if err == nil {
 			json.Unmarshal([]byte(val), &message)
-			fmt.Println(geohelper.GetName(voievodships, message.Lat, message.Lng))
-			fmt.Println(geohelper.GetName(shires, message.Lat, message.Lng))
+			voievodshipName := geohelper.GetName(voievodships, message.Lat, message.Lng)
+			shireName := geohelper.GetName(shires, message.Lat, message.Lng)
+			messageOut := MessageOut{shireName, voievodshipName}
+			toSend, _ := json.Marshal(messageOut)
+			_, err = client.Set(message.Id, toSend, 0).Result()
 		}
 	}
 }
