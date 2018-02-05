@@ -26,11 +26,10 @@ Literatura:
        http://uriasz.am.szczecin.pl/naw_bezp/odwzorowania.html
 */
 
-package main
+package geohelper
 
 import (
 	"errors"
-	"fmt"
 	"github.com/jonas-p/go-shp"
 	"github.com/kellydunn/golang-geo"
 	"golang.org/x/text/encoding/charmap"
@@ -38,27 +37,39 @@ import (
 	"math"
 )
 
-func main() {
-	voievodship, err := shp.Open("data/wojewodztwa.shp")
-	if err != nil {
-		log.Fatal(err)
-	}
-	shire, err := shp.Open("data/powiaty.shp")
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(getName(voievodship, 52.420765, 16.942293))
-	fmt.Println(getName(shire, 52.420765, 16.942293))
-	defer voievodship.Close()
-	defer shire.Close()
+type geoPolygonWithId struct {
+	Id      string
+	Polygon *geo.Polygon
 }
 
-func getName(shape *shp.Reader, latInput float64, lngInput float64) string {
+// var voievodships []*geoPolygonWithId
+// var shires []*geoPolygonWithId
+
+func Create() ([]*geoPolygonWithId, []*geoPolygonWithId) {
+	voievodship, _ := shp.Open("geohelper/data/wojewodztwa.shp")
+	shire, _ := shp.Open("geohelper/data/powiaty.shp")
+	// defer voievodship.Close()
+	// defer shire.Close()
+	return createPolygonsMap(shire), createPolygonsMap(voievodship)
+}
+
+func GetName(polygons []*geoPolygonWithId, latInput float64, lngInput float64) string {
 	lat, lng, err := wsg84ToPuwg92(latInput, lngInput)
 	if err != nil {
 		log.Fatal(err)
 	}
 	toSearch := geo.NewPoint(lng, lat)
+	for _, polygon := range polygons {
+		contains := polygon.Polygon.Contains(toSearch)
+		if contains {
+			return polygon.Id
+		}
+	}
+	return ""
+}
+
+func createPolygonsMap(shape *shp.Reader) []*geoPolygonWithId {
+	polygonsWithIds := []*geoPolygonWithId{}
 	for shape.Next() {
 		n, p := shape.Shape()
 		points := p.(*shp.Polygon).Points
@@ -67,14 +78,12 @@ func getName(shape *shp.Reader, latInput float64, lngInput float64) string {
 		for index, point := range points {
 			pointMap[index] = geo.NewPoint(point.X, point.Y)
 		}
-		polygon := geo.NewPolygon(pointMap)
-		contains := polygon.Contains(toSearch)
-		if contains {
-			name := shape.ReadAttribute(n, 5)
-			return DecodeWindows1250([]byte(name))
-		}
+		geoPolygon := geo.NewPolygon(pointMap)
+		name := DecodeWindows1250([]byte(shape.ReadAttribute(n, 5)))
+		customPolygon := geoPolygonWithId{name, geoPolygon}
+		polygonsWithIds = append(polygonsWithIds, &customPolygon)
 	}
-	return ""
+	return polygonsWithIds
 }
 
 func DecodeWindows1250(enc []byte) string {
