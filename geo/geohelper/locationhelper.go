@@ -33,20 +33,19 @@ import (
 	"github.com/jonas-p/go-shp"
 	"github.com/kellydunn/golang-geo"
 	"golang.org/x/text/encoding/charmap"
-	"log"
 	"math"
 )
 
 type poland struct {
-  wojewodztwa []*geoPolygonWithId
-  powiaty []*geoPolygonWithId
-  gminy []*geoPolygonWithId
+	wojewodztwa []*geoPolygonWithId
+	powiaty     []*geoPolygonWithId
+	gminy       []*geoPolygonWithId
 }
 
 type pointInfo struct {
-  wojewodztwo string
-  powiat string
-  gmina string
+	Wojewodztwo string
+	Powiat      string
+	Gmina       string
 }
 
 type geoPolygonWithId struct {
@@ -54,7 +53,7 @@ type geoPolygonWithId struct {
 	Polygon *geo.Polygon
 }
 
-func Create() poland{
+func Create() poland {
 	wojewodztwa, _ := shp.Open("geohelper/data/wojewodztwa.shp")
 	powiaty, _ := shp.Open("geohelper/data/powiaty.shp")
 	gminy, _ := shp.Open("geohelper/data/gminy.shp")
@@ -62,13 +61,13 @@ func Create() poland{
 }
 
 func GetInfo(p poland, lat float64, lng float64) pointInfo {
-  return pointInfo{getName(p.wojewodztwa, lat, lng), getName(p.powiaty, lat, lng), getName(p.gminy, lat, lng)}
+	return pointInfo{getName(p.wojewodztwa, lat, lng), getName(p.powiaty, lat, lng), getName(p.gminy, lat, lng)}
 }
 
 func getName(polygons []*geoPolygonWithId, latInput float64, lngInput float64) string {
 	lat, lng, err := wsg84ToPuwg92(latInput, lngInput)
 	if err != nil {
-		log.Fatal(err)
+		return ""
 	}
 	toSearch := geo.NewPoint(lng, lat)
 	for _, polygon := range polygons {
