@@ -1,8 +1,8 @@
 package main
 
 import (
-	"./geohelper"
 	"encoding/json"
+	"geo/geohelper"
 	"github.com/go-redis/redis"
 )
 
@@ -21,7 +21,7 @@ type MessageOut struct {
 func main() {
 	polska := geohelper.Create()
 	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     "redis:6379",
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
