@@ -1,8 +1,12 @@
+require 'securerandom'
+require 'redis'
 require 'time'
 require 'net/http'
 require 'uri'
 require 'nokogiri'
 require 'json'
+
+$redis = Redis.new()
 
 class Emoji
   def failure
@@ -17,7 +21,6 @@ class Emoji
 end
 
 class Location
-
   attr_reader :voievodship, :shire, :town, :lat, :lng
   def initialize (lat,lng)
     @lat = lat
@@ -25,26 +28,18 @@ class Location
     @voievodship = nil 
     @shire = nil 
     @town = nil
-    uri = URI.parse("https://maps.googleapis.com/maps/api/geocode/json?latlng=#{lat},#{lng}")
-    response = JSON.parse(Net::HTTP.get_response(uri).body)
-    data = {}
-    if response['status'] == 'ZERO_RESULTS' or response['results'].length == 0
-      return nil
+    key = SecureRandom.hex(5)
+    $redis.lpush('locations', "{\"Id\":\"#{key}\",\"Lat\":#{@lat},\"Lng\":#{@lng}}")
+    sleep 0.1
+    anwser = $redis.get(key)
+    while anwser == nil
+      anwser = $redis.get(key)
     end
-    response['results'][0]['address_components'].each do |item|
-      if item['types'].include?('administrative_area_level_1')
-        data['voievodship'] = item['long_name']
-      elsif item['types'].include?('administrative_area_level_2')
-        data['shire'] = item['long_name']
-      elsif item['types'].include?('locality')
-        data['town'] = item['long_name']
-      end
-    end
-    @voievodship = (data['voievodship'].split(' ') - ['województwo','Województwo']).join('') if data['voievodship'] != nil
-    @shire = data['shire'].downcase if data['shire'] != nil
-    @town = data['town']
+    parsed_anwser = JSON.parse(anwser)
+    @voievodship = parsed_anwser['Wojewodztwo']
+    @shire = parsed_anwser['Powiat'].gsub('powiat ', '')
+    @town = parsed_anwser['Gmina']
   end
-
 end
 
 class Meteo
