@@ -3,6 +3,7 @@ package main
 import (
 	"./geohelper"
 	"encoding/json"
+	"fmt"
 	"github.com/go-redis/redis"
 )
 
@@ -13,12 +14,13 @@ type Message struct {
 }
 
 type MessageOut struct {
-	Powiat string
+	Powiat      string
+	Gmina       string
 	Wojewodztwo string
 }
 
 func main() {
-	shires, voievodships := geohelper.Create()
+	polska := geohelper.Create()
 	client := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "", // no password set
@@ -31,9 +33,14 @@ func main() {
 		val, err = client.RPop("locations").Result()
 		if err == nil {
 			json.Unmarshal([]byte(val), &message)
-			voievodshipName := geohelper.GetName(voievodships, message.Lat, message.Lng)
-			shireName := geohelper.GetName(shires, message.Lat, message.Lng)
-			messageOut := MessageOut{shireName, voievodshipName}
+			locationInfo := geohelper.GetInfo(polska, message.Lat, message.Lng)
+			fmt.Println(locationInfo)
+			messageOut := MessageOut{
+				locationInfo.Powiat,
+				locationInfo.Gmina,
+				locationInfo.Wojewodztwo,
+			}
+			fmt.Println(message.Id)
 			toSend, _ := json.Marshal(messageOut)
 			_, err = client.Set(message.Id, toSend, 0).Result()
 		}
