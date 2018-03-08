@@ -6,7 +6,7 @@ require 'uri'
 require 'nokogiri'
 require 'json'
 
-$redis = Redis.new()
+$redis = Redis.new(host: ENV["REDIS_PORT_6379_TCP_ADDR"], port: ENV["REDIS_PORT_6379_TCP_PORT"])
 
 class Emoji
   def failure

@@ -1,0 +1,11 @@
+version: '3'
+services:
+  bot:
+    build: ./bot
+    links:
+      - redis
+    volumes:
+      - ./bot:/bot
+    command: ruby telegram_bot.rb
+  redis:
+    image: redis:latest

@@ -4,7 +4,6 @@ require './lib/meteo'
 require './lib/cinema'
 require './lib/busses'
 require 'time'
-require 'thread'
 
 #   / _|_   _ _ __   ___| |_(_) ___  _ __  ___    
 #  | |_| | | | '_ \ / __| __| |/ _ \| '_ \/ __|   
@@ -183,20 +182,20 @@ end
 #    \_/ \__,_|_|  |_|\__,_|_.__/|_|\___|___/
 
 timestamp_start = Time.now
-puts "Loading Config..."
+$stdout.puts "Loading Config..."
 token = JSON.parse(File.read('./config/config.json'))['telegram']['token']
-puts "Initializing objects..."
+$stdout.puts "Initializing objects..."
 $weather = Meteo.new
 $cinema = Cinema.new
 $movies = Movies.new
 $emoji = Emoji.new
 $time_table = TimeTable.new
 $last_update_time = Time.now
-puts "Loading cache..."
+$stdout.puts "Loading cache..."
 $cache = JSON.parse(File.read('./cache/users.json'))
-puts "starting main loop!"
+$stdout.puts "starting main loop!"
 timestamp_stop = Time.now
-puts "Startup time: #{timestamp_stop - timestamp_start} s."
+$stdout.puts "Startup time: #{timestamp_stop - timestamp_start} s."
 
 #                   _         _                   
 #   _ __ ___   __ _(_)_ __   | | ___   ___  _ __  
@@ -237,7 +236,7 @@ Telegram::Bot::Client.run(token) do |bot|
     end
   rescue Telegram::Bot::Exceptions::ResponseError => e
     if e.error_code.to_s == "502"
-      puts "Telegram 502 error"
+      $stdout.puts "Telegram 502 error"
     end
     retry
   end
