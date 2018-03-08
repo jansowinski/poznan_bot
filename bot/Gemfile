@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
 gem 'telegram-bot-ruby'
-gem 'rake'
 gem 'redis'
 gem 'nokogiri'
+gem 'addressable'
