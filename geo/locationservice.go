@@ -3,7 +3,6 @@ package main
 import (
 	"./geohelper"
 	"encoding/json"
-	"fmt"
 	"github.com/go-redis/redis"
 )
 
@@ -34,13 +33,11 @@ func main() {
 		if err == nil {
 			json.Unmarshal([]byte(val), &message)
 			locationInfo := geohelper.GetInfo(polska, message.Lat, message.Lng)
-			fmt.Println(locationInfo)
 			messageOut := MessageOut{
 				locationInfo.Powiat,
 				locationInfo.Gmina,
 				locationInfo.Wojewodztwo,
 			}
-			fmt.Println(message.Id)
 			toSend, _ := json.Marshal(messageOut)
 			_, err = client.Set(message.Id, toSend, 0).Result()
 		}
