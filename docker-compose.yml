@@ -12,6 +12,15 @@ services:
     depends_on:
       - redis
     command: ./geo
+  rowery:
+    build: ./rowery
+    environment:
+      - PYTHONUNBUFFERED=0   
+    depends_on:
+      - redis
+    volumes:
+      - ./rowery:/rowery
+    command: python rowery.py
   redis:
     image: redis:3.2.11-alpine
     ports:
