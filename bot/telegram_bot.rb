@@ -207,6 +207,7 @@ end
 #   \ V | (_| | |  | | (_| | |_) | |  __\__ \
 #    \_/ \__,_|_|  |_|\__,_|_.__/|_|\___|___/
 
+$stdout.sync = true
 timestamp_start = Time.now
 $stdout.puts "Loading Config..."
 token = JSON.parse(File.read('./config/config.json'))['telegram']['token']
