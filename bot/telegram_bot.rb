@@ -4,6 +4,7 @@ require './lib/meteo'
 require './lib/cinema'
 require './lib/busses'
 require 'time'
+require 'securerandom'
 
 #   / _|_   _ _ __   ___| |_(_) ___  _ __  ___    
 #  | |_| | | | '_ \ / __| __| |/ _ \| '_ \/ __|   
@@ -24,6 +25,14 @@ def handle_location(bot, message)
       text: 'pogoda', 
       callback_data: {
         'type' => 'weather',
+        'lat' => message.location.latitude, 
+        'lng' => message.location.longitude
+      }.to_json
+    ),
+    Telegram::Bot::Types::InlineKeyboardButton.new(
+      text: 'rowery miejskie', 
+      callback_data: {
+        'type' => 'bikes',
         'lat' => message.location.latitude, 
         'lng' => message.location.longitude
       }.to_json
@@ -139,6 +148,22 @@ def handle_callback(bot, message)
     bot.api.send_message(
       chat_id: message.from.id, 
       text: bot_message)
+  elsif order['type'] == 'bikes'
+    key = SecureRandom.hex(10)
+    request = { 
+      'id' => key,
+      'lat' => order['lat'],
+      'lng' => order['lng']
+    }
+    $redis.rpush('rowery', request.to_json)
+    anwser = $redis.get(key)
+    while anwser == nil
+      anwser = $redis.get(key)
+    end
+    $redis.del(key)
+    bot.api.send_message(
+      chat_id: message.from.id, 
+      text: anwser)
   elsif order['type'] == 'weather'
     location = Location.new(order['lat'], order['lng'])
     begin
@@ -194,6 +219,7 @@ $last_update_time = Time.now
 $stdout.puts "Loading cache..."
 $cache = JSON.parse(File.read('./cache/users.json'))
 $stdout.puts "starting main loop!"
+$redis = Redis.new(host: 'redis', port: 6379)
 timestamp_stop = Time.now
 $stdout.puts "Startup time: #{timestamp_stop - timestamp_start} s."
 

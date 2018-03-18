@@ -6,8 +6,6 @@ require 'uri'
 require 'nokogiri'
 require 'json'
 
-$redis = Redis.new(host: 'redis', port: 6379)
-
 class Emoji
   def failure
     return ['😏','😢','😭','🌧'].sample
@@ -28,13 +26,14 @@ class Location
     @voievodship = nil 
     @shire = nil 
     @town = nil
-    key = SecureRandom.hex(5)
+    key = SecureRandom.hex(10)
     $redis.lpush('locations', "{\"Id\":\"#{key}\",\"Lat\":#{@lat},\"Lng\":#{@lng}}")
     sleep 0.1
     anwser = $redis.get(key)
     while anwser == nil
       anwser = $redis.get(key)
     end
+    $redis.del(key)
     parsed_anwser = JSON.parse(anwser)
     @voievodship = parsed_anwser['Wojewodztwo']
     @shire = parsed_anwser['Powiat'].gsub('powiat ', '')
