@@ -1,7 +1,3 @@
-import json
-import requests
-import math
-import os.path
 import redis
 
 client = redis.StrictRedis(host='redis', port=6379, db=0)
