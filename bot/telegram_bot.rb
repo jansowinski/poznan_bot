@@ -163,7 +163,8 @@ def handle_callback(bot, message)
     $redis.del(key)
     bot.api.send_message(
       chat_id: message.from.id, 
-      text: anwser)
+      text: anwser,
+      parse_mode: 'Markdown')
   elsif order['type'] == 'weather'
     location = Location.new(order['lat'], order['lng'])
     begin
