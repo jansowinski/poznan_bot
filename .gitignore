@@ -3,4 +3,5 @@ nohup.out
 *.jpg
 *.lock
 *.json
+*.xml
 rowery/__pycache__
