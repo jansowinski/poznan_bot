@@ -1,6 +1,6 @@
 # Poznan Bot 💥
 
-![Demo](https://github.com/iansowinski/poznan_bot/blob/master/img/video.gif)
+![Demo](https://github.com/iansowinski/poznan_bot/blob/master/img/video.gif | width=300)
 
 Telegram chatbot for telegram power-users from Poznan/Poland.
 
