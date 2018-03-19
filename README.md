@@ -15,4 +15,4 @@ to make use of it:
 
 Big thanks to [@jmajchrzak](https://github.com/jmajchrzak) for NextBike service.
 
-![Demo](https://github.com/iansowinski/poznan_bot/blob/master/img/video.gif)
+<img src="https://github.com/iansowinski/poznan_bot/raw/master/img/video.gif" alt="Demo" style="max-width:320px;">
