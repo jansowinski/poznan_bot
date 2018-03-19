@@ -1,5 +1,7 @@
 # Poznan Bot 💥
 
+![Demo](https://github.com/iansowinski/poznan_bot/blob/master/img/video.gif)
+
 Telegram chatbot for telegram power-users from Poznan/Poland.
 
 to make use of it:
