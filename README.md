@@ -1,5 +1,7 @@
 # Poznan Bot 💥
 
+![Demo](https://github.com/iansowinski/poznan_bot/blob/master/img/video.gif)
+
 Telegram chatbot for telegram power-users from Poznan/Poland.
 
 to make use of it:
@@ -14,5 +16,3 @@ to make use of it:
 
 
 Big thanks to [@jmajchrzak](https://github.com/jmajchrzak) for NextBike service.
-
-<img src="https://github.com/iansowinski/poznan_bot/raw/master/img/video.gif" alt="Demo" style="max-width:320px;">
