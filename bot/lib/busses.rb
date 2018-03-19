@@ -25,9 +25,10 @@ class TimeTable
   end
 
   def print_timetable(bus_stop)
-    array_to_ptint = ["Przystanek #{@bus_stops[bus_stop]['name']}\n"]
+    array_to_ptint = ["🚏 Przystanek *#{@bus_stops[bus_stop]['name']}*\n"]
     get_timatable(bus_stop).each do |bus|
-      array_to_ptint << "#{bus['line']} - #{bus['minutes']} min. bus (→ #{bus['direction']})"
+      emoticon = bus['line'].to_i < 30 ? "🚋" : "🚌"
+      array_to_ptint << "#{emoticon}  #{bus['line']} - #{bus['minutes']} min. (→ #{bus['direction']})"
     end
 
     return array_to_ptint.join("\n")

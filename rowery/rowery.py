@@ -10,7 +10,7 @@ while True:
         message = json.loads(location_to_process.decode("utf-8"))
         data = prm.run_bot([message['lat'], message['lng']], 5)
 
-        response = '*Najbliższe stacje od Ciebie o* ' + data[0][-1] +'*: *  \n\n'
+        response = '🚲 *Najbliższe stacje od Ciebie o* ' + data[0][-1] +'*: *  \n\n'
         cond = ['2', '3', '4']
 
         for item in data:

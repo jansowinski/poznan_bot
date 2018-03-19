@@ -147,7 +147,8 @@ def handle_callback(bot, message)
       order['lng'])
     bot.api.send_message(
       chat_id: message.from.id, 
-      text: bot_message)
+      text: bot_message,
+      parse_mode: 'Markdown')
   elsif order['type'] == 'bikes'
     key = SecureRandom.hex(10)
     request = { 
