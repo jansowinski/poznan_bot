@@ -236,7 +236,7 @@ Telegram::Bot::Client.run(token) do |bot|
   check_for_updates
   begin
     bot.listen do |message|
-      if message.class != Telegram::Bot::Types::CallbackQuery and !$cache.include?(message.chat.id)
+      if message.class != Telegram::Bot::Types::CallbackQuery and !$cache.include?(message.chat.id) and message.from != nil
         log_users(message)
       end
       case message
