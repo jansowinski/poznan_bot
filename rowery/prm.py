@@ -5,20 +5,16 @@ import os
 import math
 import time
 
-
-#definicja nazw podstawowych plików
-file_temp_name = 'prm_data_temp.xml'
-file_name = 'prm_data.xml'
-file_properties_of_stations = 'prm_properties_of_stations.json'
+file_temp_name = 'temp/prm_data_temp.xml'
+file_name = 'temp/prm_data.xml'
+file_properties_of_stations = 'temp/prm_properties_of_stations.json'
 
 
 # pobiera dane z strony internetowej NextBike dla Poznania i zapisuje do pliku
-def get_data_from_internet():
+def download_data():
     url = 'https://nextbike.net/maps/nextbike-official.xml?city=192'
-    page = requests.get(url)
-    temp_page_content = page.text
-    save_to_file(file_temp_name, temp_page_content)
-
+    page = requests.get(url).text
+    save_to_file(file_temp_name, page)
 
 # zwraca dane z pliku .json
 def get_json_data_from_file(file_name):
@@ -28,7 +24,6 @@ def get_json_data_from_file(file_name):
     page.close()
     return feedback
 
-
 # otwiera i zwraca zawartość pliku
 def open_file(name):
     file = open(name, 'r', encoding='utf8')
@@ -36,20 +31,17 @@ def open_file(name):
     file.close()
     return feedback
 
-
 # zapisuje dane do pliku - należy podać nazwę z roszerzeniem oraz dane
 def save_to_file(name, data):
     file = open(name, 'w', encoding='utf8')
     file.write(str(data))
     file.close()
 
-
 # parsuje plik do xml-a i zwraca zawartość
 def parse_xml(file_name):
     tree  = ET.parse(file_name)
     root = tree.getroot()
     return root
-
 
 # zmienia zewnętrzne cudzysłowy w apostrofy dla niektórych atrybutów:
 # potrzebne do poprawnego parsowania
@@ -63,14 +55,11 @@ def change_characters():
             word = word[:8].replace('"', '\'') + word[8:]
             word = word[:-1]
             word = word + "'"
-            # print(word)
         if 'bike_types' in word:
             word = word[:12].replace('"', '\'') + word[12:]
             word = word[:-1]
             word = word + "'"
-            # print(word)
         page = page + ' ' + word
-
     #wywalenie nagłówka z wersją xml i kodowanie - wywala parser
     page = page[40:]
     save_to_file(file_name, page)
@@ -80,7 +69,6 @@ def change_characters():
 def get_usage_of_stations(file_name):
     # parsuje plik xml do zmiennej
     root = parse_xml(file_name)
-
     usage_of_stations = []
     for item in root.iter('place'):
         usage_of_stations.append({
@@ -96,7 +84,7 @@ def get_usage_of_stations(file_name):
 
 # tworzy plik json który zawiera podstawowe dane na temat stacji
 def get_properties_of_stations_to_file(file_name):
-    get_data_from_internet()
+    download_data()
     change_characters()
     # parsuje plik xml do zmiennej
     root = parse_xml(file_name)
@@ -115,7 +103,6 @@ def get_properties_of_stations_to_file(file_name):
         json.dump(properties_of_stations, file, sort_keys = True, indent = 4, ensure_ascii = True)
 
 
-# zwraca id najbliższych stacji PRM, coord: współrzędne do wyszkuania, stop_num: liczba zwróconych stacji
 def get_closest_stops(coords, num_of_stations):
     # czyta słownik z właściwościami stacjami zapisany na dysku
     properties_of_stations = get_json_data_from_file(file_properties_of_stations)
@@ -123,9 +110,9 @@ def get_closest_stops(coords, num_of_stations):
     closest_stations = []
     for item in properties_of_stations:
         array = []
-        lat_difference = coords[0] - float(item['lat'])
-        lng_difference = coords[1] - float(item['lng'])
-        distance = math.sqrt((lat_difference * lat_difference) + (lng_difference * lng_difference))
+        lat_diff = coords[0] - float(item['lat'])
+        lng_diff = coords[1] - float(item['lng'])
+        distance = math.sqrt((lat_diff * lat_diff) + (lng_diff * lng_diff))
         array.append(item['uid'])
         array.append(distance)
         closest_stations.append(array)
@@ -135,7 +122,7 @@ def get_closest_stops(coords, num_of_stations):
     return closest_stations
 
 
-def get_properties_of_closest_stations(closest_stations):
+def get_closest_stations_properties(closest_stations):
     # zwraca się o aktualne wykorzystanie stacji
     usage_of_stations = get_usage_of_stations(file_name)
 
@@ -152,34 +139,16 @@ def get_properties_of_closest_stations(closest_stations):
                 final_array.append(array)
     return final_array
 
-
-# sprawdza czy plik jest starszy niż 5 minut, jeśli tak tworzy nowy
-# w budowie
-def check_if_file_expires():
-    pass
-
-
-def run_bot(coords, num_of_stations):
-    # sprawdza czy istnieje słownik z właściwościami stacji na dysku, 
-    # jak nie to go tworzy
+def stations_from_coords(coords, num_of_stations=5):
     if os.path.isfile(file_properties_of_stations):
-        # print('Plik z właściwościami stacji istnieje, nie tworzę nowego')
         pass
     else:
-        # print('Plik z właściwościami stacji nie istnieje, tworzę nowy')
         get_properties_of_stations_to_file(file_name)
 
-    get_data_from_internet()
+    download_data()
     change_characters()
 
     closest_stations = get_closest_stops(coords, num_of_stations)
-    properties_of_closest_stations = get_properties_of_closest_stations(closest_stations)
-    return properties_of_closest_stations
+    closest_stations_properties = get_closest_stations_properties(closest_stations)
+    return closest_stations_properties
 
-
-# coordy dla których wybiera najbliższe stacje
-# przy bocie niepotrzebne
-# coords = [52.409925, 16.922754]
-
-#testowanie do bota
-# print(run_bot([52.409925, 16.922754], 5))
