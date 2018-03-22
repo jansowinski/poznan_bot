@@ -21,6 +21,6 @@ while True:
             else:
                 grammar_message = ' rowerów'
 
-            response = str(response) + str(item[0]) + ' : ' + str(item[1]) + grammar_message + '\n'
+            response = str(response) + str(item[2]) + ' : ' + str(item[3]) + grammar_message + '\n'
 
         client.set(message['id'], response)
