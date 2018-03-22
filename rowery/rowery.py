@@ -10,17 +10,17 @@ while True:
         message = json.loads(location_to_process.decode("utf-8"))
         data = prm.stations_from_coords([message['lat'], message['lng']], 5)
 
-        response = '🚲 *Najbliższe stacje od Ciebie o* ' + data[0][-1] +'*: *  \n\n'
+        response = '🚲 *Najbliższe stacje od Ciebie o* ' + str(data[0]['time']) +'*: *  \n\n'
         cond = ['2', '3', '4']
 
         for item in data:
-            if item[1] == '1':
+            if item['bikes'] == '1':
                 grammar_message = ' rower'
-            elif item[1] in cond:
+            elif item['bikes'] in cond:
                 grammar_message = ' rowery'
             else:
                 grammar_message = ' rowerów'
 
-            response = str(response) + str(item[2]) + ' : ' + str(item[3]) + grammar_message + '\n'
+            response = str(response) + str(item['label']) + ' : ' + str(item['bikes']) + grammar_message + '\n'
 
         client.set(message['id'], response)
