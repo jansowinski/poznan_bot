@@ -8,7 +8,7 @@ while True:
     location_to_process = client.rpop('rowery')
     if location_to_process != None:
         message = json.loads(location_to_process.decode("utf-8"))
-        data = prm.stations_from_coords([message['lat'], message['lng']], 5)
+        data = prm.stations_from_coords('Poznan', [message['lat'], message['lng']], 5)
 
         response = '🚲 *Najbliższe stacje od Ciebie o* ' + str(data[0]['time']) +'*: *  \n\n'
         cond = ['2', '3', '4']
