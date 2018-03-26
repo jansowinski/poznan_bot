@@ -23,5 +23,6 @@ services:
     command: python rowery.py
   redis:
     image: redis:3.2.11-alpine
+    command: redis-server --appendonly yes
     ports:
       - 6379:6379
