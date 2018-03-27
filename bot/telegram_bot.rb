@@ -268,5 +268,8 @@ Telegram::Bot::Client.run(token) do |bot|
       $stdout.puts "Telegram 502 error"
     end
     retry
+  rescue Faraday::ConnectionFailed => e
+    puts e
+    retry
   end
 end
