@@ -59,7 +59,7 @@ def get_properties_of_stations(xml_file):
             'label' : item.attrib['name'],
             'bikes' : item.attrib['bikes'],
             'free_racks' : item.attrib['free_racks'],
-            'bike_racks' : item.attrib['bike_racks'],
+            'rack_locks' : item.attrib['rack_locks'],
             'time' : time.strftime("%H:%M")
         })
     return data
@@ -114,7 +114,10 @@ def prepare_message(closest_stations_sorted, num_of_stations, max_distance):
 
 # główna pętla, jej wywołanie wywułuje wszystkie funkcje powyżej
 def stations_from_coords(city, coords, num_of_stations=5, max_distance=1200):
-    properties_of_stations = merge_data(city)
-    closest_stations_sorted = get_closest_stops(coords, properties_of_stations)
-    message = prepare_message(closest_stations_sorted, num_of_stations, max_distance)
+    try:
+        properties_of_stations = merge_data(city)
+        closest_stations_sorted = get_closest_stops(coords, properties_of_stations)
+        message = prepare_message(closest_stations_sorted, num_of_stations, max_distance)
+    except:
+        message = 'Błąd systemu'
     return message
