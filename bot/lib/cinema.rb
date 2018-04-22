@@ -139,8 +139,10 @@ class Movies
     movie_list.each do |item|
       item = item[0].force_encoding(Encoding::UTF_8)
       name = /<a class=\"name.*\"> (.+?)<\/a><div/.match(item)[1]
-      filmweb_link = /href=\"(\/film.+?)\"/.match(item)[1]
-      @movies << Movie.new(name, filmweb_link)
+      filmweb_link = /href=\"(\/film.+?)\"/.match(item)
+      if filmweb_link != nil
+        @movies << Movie.new(name, filmweb_link[1])
+      end
     end
 
   end
