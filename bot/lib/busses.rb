@@ -49,8 +49,15 @@ class TimeTable
     })
     request.set_form_data(params)
     response = https.request(request)
-
-    array = JSON.parse(response.body)['success']['times']
+    if !response.body.include?('success')
+      return ['Brak autobusów']
+    end
+    array = JSON.parse(response.body)['success']
+    if array.include?('times')
+      array = array['times']
+    else
+      array = array['bollard']['times']
+    end
     bus_stop_name = JSON.parse(response.body)['success']['bollard']['name']
 
     array.each_with_index do |item, index|
