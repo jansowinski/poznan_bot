@@ -59,7 +59,7 @@ def get_properties_of_stations(xml_file):
             'label' : item.attrib['name'],
             'bikes' : item.attrib['bikes'],
             'free_racks' : item.attrib['free_racks'],
-            'rack_locks' : item.attrib['rack_locks'],
+            'bike_racks' : item.attrib['bike_racks'],
             'time' : time.strftime("%H:%M")
         })
     return data
@@ -87,6 +87,8 @@ def get_closest_stops(coords, properties_of_stations):
             'label' : item['label'],
             'distance' : distance,
             'bikes' : item['bikes'],
+            'free_racks' : item['free_racks'],
+            'bike_racks' : item['bike_racks'],
             'time' : item['time'],
             })
         closest_stations = closest_stations + array

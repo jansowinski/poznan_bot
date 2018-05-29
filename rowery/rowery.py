@@ -10,17 +10,24 @@ while True:
         message = json.loads(location_to_process.decode("utf-8"))
         data = prm.stations_from_coords('Poznan', [message['lat'], message['lng']], 5)
 
-        response = '🚲 *Najbliższe stacje od Ciebie o* ' + str(data[0]['time']) +'*: *  \n\n'
+        response = '🚲 *Najbliższe stacje od Ciebie o* ' + str(data[0]['time']) +'* :*\n\n'
         cond = ['2', '3', '4']
 
         for item in data:
             if item['bikes'] == '1':
-                grammar_message = ' rower'
+                grammar_message_bike = ' rower'
             elif item['bikes'] in cond:
-                grammar_message = ' rowery'
+                grammar_message_bike = ' rowery'
             else:
-                grammar_message = ' rowerów'
+                grammar_message_bike = ' rowerów'
 
-            response = str(response) + str(item['label']) + ' (' + str(item['distance']) + ' m)' + ' : ' + str(item['bikes']) + grammar_message + '\n'
+            if item['free_racks'] == '1':
+                grammar_message_racks = ' miejsce'
+            elif item['free_racks'] in cond:
+                grammar_message_racks = ' miejsca'
+            else:
+                grammar_message_racks = ' miejsc'
+
+            response = str(response) + '*' + str(item['label']) + '* - ' + str(item['distance']) + ' m' + ':' + '\n    ' + str(item['bikes']) + grammar_message_bike + '\n    ' +str(item['free_racks']) + '/' + str(item['bike_racks']) + grammar_message_racks + '\n'
 
         client.set(message['id'], response)
