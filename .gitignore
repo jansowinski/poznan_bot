@@ -5,3 +5,4 @@ nohup.out
 *.json
 *.xml
 rowery/__pycache__
+rowery/test.py
