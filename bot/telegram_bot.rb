@@ -185,13 +185,29 @@ def handle_callback(bot, message)
 end
 
 def handle_sunday(bot, message)
-  closed_weeks = ["13.05.2018", "20.05.2018", "10.06.2018", "17.06.2018", "8.07.2018", "15.07.2018", "22.07.2018", "12.08.2018", "19.08.2018", "9.09.2018", "16.09.2018", "23.09.2018", "14.10.2018", "21.10.2018", "11.11.2018", "18.11.2018", "9.12.2018"].map { |d| Date.parse(d).strftime('%W')}
+  closed_weeks = 
+    ["13.05.2018",
+     "20.05.2018",
+     "10.06.2018",
+     "17.06.2018",
+     "8.07.2018",
+     "15.07.2018",
+     "22.07.2018",
+     "12.08.2018",
+     "19.08.2018",
+     "9.09.2018",
+     "16.09.2018",
+     "23.09.2018",
+     "14.10.2018",
+     "21.10.2018",
+     "11.11.2018",
+     "18.11.2018",
+     "9.12.2018"].map { |d| Date.parse(d).strftime('%W')}
   if closed_weeks.include?(Time.now.strftime('%W'))
-    return 
-      bot.api.send_message(
-        chat_id: message.chat.id, 
-        text: "W tę niedzielę sklepy są ZAMKNIĘTE"
-      )
+    bot.api.send_message(
+      chat_id: message.chat.id, 
+      text: "W tę niedzielę sklepy są ZAMKNIĘTE"
+    )
   else
     bot.api.send_message(
       chat_id: message.chat.id, 
