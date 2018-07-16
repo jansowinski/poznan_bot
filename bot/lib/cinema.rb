@@ -62,7 +62,7 @@ class Cinema
   end
 
   def assigner (url_link, day)
-    uri = URI.parse("http://www.filmweb.pl/showtimes/Pozna%C5%84/#{url_link}?day=#{day.to_s}")
+    uri = URI.parse("https://www.filmweb.pl/showtimes/Pozna%C5%84/#{url_link}?day=#{day.to_s}")
     response = Net::HTTP.get_response(uri).body
     return Nokogiri::HTML(response)
   end
@@ -100,10 +100,9 @@ class Movies
   attr_reader :movies, :update
 
   def initialize
-    @url = "http://www.filmweb.pl/showtimes/Pozna%C5%84"
+    @url = "https://www.filmweb.pl/showtimes/Pozna%C5%84"
     get_movies_list
   end
-
 
   def movies
     string = ""
@@ -162,7 +161,7 @@ class Movie
   attr_reader :filmweb_score, :metacritic_score, :rotten_tomatoes_score, :filmweb_link, :hours, :title, :original_title
   def initialize(title, filmweb_link)
     @title = title
-    @filmweb_link = "http://www.filmweb.pl#{filmweb_link}"
+    @filmweb_link = "https://www.filmweb.pl#{filmweb_link}"
     parse_filmweb_data
     set_year
     set_metacritic_score

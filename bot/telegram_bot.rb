@@ -220,7 +220,7 @@ def check_for_updates
   now = Time.now
   if now.day > $last_update_time.day or now.month > $last_update_time.month
     $last_update_time = now
-    movie.update
+    $movies.update
   end
 end
 
