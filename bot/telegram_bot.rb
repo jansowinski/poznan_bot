@@ -6,11 +6,6 @@ require './lib/busses'
 require 'time'
 require 'securerandom'
 
-#   / _|_   _ _ __   ___| |_(_) ___  _ __  ___    
-#  | |_| | | | '_ \ / __| __| |/ _ \| '_ \/ __|   
-#  |  _| |_| | | | | (__| |_| | (_) | | | \__ \   
-#  |_|  \__,_|_| |_|\___|\__|__\___/|_| |_|___/  
-
 def handle_location(bot, message)
    buttons = [
     Telegram::Bot::Types::InlineKeyboardButton.new(
@@ -185,25 +180,17 @@ def handle_callback(bot, message)
 end
 
 def handle_sunday(bot, message)
-  closed_weeks = 
-    ["13.05.2018",
-     "20.05.2018",
-     "10.06.2018",
-     "17.06.2018",
-     "8.07.2018",
-     "15.07.2018",
-     "22.07.2018",
-     "12.08.2018",
-     "19.08.2018",
-     "9.09.2018",
-     "16.09.2018",
-     "23.09.2018",
-     "14.10.2018",
-     "21.10.2018",
-     "11.11.2018",
-     "18.11.2018",
-     "9.12.2018"].map { |d| Date.parse(d).strftime('%W')}
-  if closed_weeks.include?(Time.now.strftime('%W'))
+  opened_weeks =
+    [
+      "27.01.2019",
+      "24.02.2019",
+      "31.03.2019",
+      "13.04.2019",
+      "28.04.2019",
+      "26.05.2019",
+      "30.06.2019"
+    ].map { |d| Date.parse(d).strftime('%W')}
+  if !opened_weeks.include?(Time.now.strftime('%W'))
     bot.api.send_message(
       chat_id: message.chat.id, 
       text: "W tę niedzielę sklepy są ZAMKNIĘTE"
@@ -235,11 +222,6 @@ def log_users(message)
   end
 end
 
-#  __   ____ _ _ __(_) __ _| |__ | | ___ ___ 
-#  \ \ / / _` | '__| |/ _` | '_ \| |/ _ / __|
-#   \ V | (_| | |  | | (_| | |_) | |  __\__ \
-#    \_/ \__,_|_|  |_|\__,_|_.__/|_|\___|___/
-
 $stdout.sync = true
 timestamp_start = Time.now
 $stdout.puts "Loading Config..."
@@ -257,13 +239,6 @@ $stdout.puts "starting main loop!"
 $redis = Redis.new(host: 'redis', port: 6379)
 timestamp_stop = Time.now
 $stdout.puts "Startup time: #{timestamp_stop - timestamp_start} s."
-
-#                   _         _                   
-#   _ __ ___   __ _(_)_ __   | | ___   ___  _ __  
-#  | '_ ` _ \ / _` | | '_ \  | |/ _ \ / _ \| '_ \ 
-#  | | | | | | (_| | | | | | | | (_) | (_) | |_) |
-#  |_| |_| |_|\__,_|_|_| |_| |_|\___/ \___/| .__/ 
-#                                          |_|    
 
 Telegram::Bot::Client.run(token) do |bot|
   check_for_updates
